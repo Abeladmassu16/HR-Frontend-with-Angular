@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CandidateService } from '../../../services/candidate.service';
 import { DepartmentService } from '../../../services/department.service';
@@ -41,30 +41,22 @@ import { Candidate } from '../../models/candidate';
   styles: [`.row{display:flex; gap:12px}`]
 })
 export class CandidateDialogComponent implements OnInit {
-  form: FormGroup;
-  depts: Department[] = [];
+  form: FormGroup; depts: Department[] = [];
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: {mode:'create'|'edit', candidate?: Candidate},
     public ref: MatDialogRef<CandidateDialogComponent>,
-    private fb: FormBuilder,
-    private api: CandidateService,
-    private deptsApi: DepartmentService
+    private fb: FormBuilder, private api: CandidateService, private deptsApi: DepartmentService
   ) {}
   ngOnInit() {
     this.deptsApi.getAll().subscribe(d => this.depts = d);
     const c = this.data.candidate || { name:'', email:'', phone:'', appliedForDepartmentId:null, status:'Applied' };
     this.form = this.fb.group({
-      id:[(c as any).id],
-      name:[c.name, Validators.required],
+      id:[(c as any).id], name:[c.name, Validators.required],
       email:[c.email, [Validators.required, Validators.email]],
       phone:[c.phone, Validators.required],
       appliedForDepartmentId:[c.appliedForDepartmentId, Validators.required],
       status:[c.status, Validators.required]
     });
   }
-  save() {
-    const v = this.form.value;
-    const req = this.data.mode==='create' ? this.api.add(v) : this.api.update(v);
-    req.subscribe(() => this.ref.close(true));
-  }
+  save(){ const v = this.form.value; const req = this.data.mode==='create' ? this.api.add(v) : this.api.update(v); req.subscribe(()=> this.ref.close(true)); }
 }

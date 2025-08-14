@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CompanyService } from '../../../services/company.service';
 import { Company } from '../../models/company';
@@ -13,9 +13,7 @@ import { Company } from '../../models/company';
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button (click)="ref.close()">Cancel</button>
-    <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid">
-      {{data.mode==='create' ? 'Create' : 'Save'}}
-    </button>
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid">{{data.mode==='create' ? 'Create' : 'Save'}}</button>
   </mat-dialog-actions>
   `
 })
@@ -31,9 +29,5 @@ export class CompanyDialogComponent implements OnInit {
     const c = this.data.company || { name:'', location:'' };
     this.form = this.fb.group({ id:[(c as any).id], name:[c.name, Validators.required], location:[c.location, Validators.required]});
   }
-  save() {
-    const v = this.form.value;
-    const req = this.data.mode==='create' ? this.api.add(v) : this.api.update(v);
-    req.subscribe(() => this.ref.close(true));
-  }
+  save() { const v = this.form.value; const req = this.data.mode==='create' ? this.api.add(v) : this.api.update(v); req.subscribe(() => this.ref.close(true)); }
 }

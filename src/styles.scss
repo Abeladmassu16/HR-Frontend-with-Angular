@@ -1,11 +1,89 @@
 @import '~@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* ---------- Global look ---------- */
+:root { --radius:16px; }
+
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif;
-  background: linear-gradient(135deg,#f5f7fb,#e9f0ff);
+body {
+  margin: 0;
+  font-family: Poppins, Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1f2937;
+  background:
+    radial-gradient(1200px 600px at 10% 0%, #eef2ff 0%, transparent 65%),
+    radial-gradient(1000px 600px at 90% 10%, #e6fffa 0%, transparent 60%),
+    linear-gradient(180deg, #f7f9ff 0%, #edf2ff 40%, #eaf6ff 100%);
 }
 
-/* soft 3D cards and hover */
-.card-3d { border-radius: 16px; padding: 16px; background: #fff; }
-.card-3d.mat-elevation-z8 { transition: box-shadow .2s ease, transform .2s ease; }
-.card-3d:hover { transform: translateY(-2px); }
+/* soft ambient blobs for depth */
+body::before, body::after{
+  content: "";
+  position: fixed; inset: auto auto auto auto;
+  width: 720px; height: 720px; border-radius: 50%;
+  filter: blur(80px); z-index: -1; pointer-events: none;
+}
+body::before{ top:-220px; left:-160px;
+  background:
+    radial-gradient(circle at 30% 30%, #9ec5ff, transparent 60%),
+    radial-gradient(circle at 60% 70%, #e1f5fe, transparent 60%);
+  opacity:.55;
+}
+body::after{ top:-120px; right:-180px;
+  background:
+    radial-gradient(circle at 40% 40%, #b2f5ea, transparent 60%),
+    radial-gradient(circle at 70% 60%, #c7d2fe, transparent 60%);
+  opacity:.55;
+}
+
+/* layout container */
+.app-container { max-width: 1120px; margin: 24px auto; padding: 0 16px; }
+
+/* ---------- App bar ---------- */
+.app-toolbar{
+  background: linear-gradient(90deg, #3f51b5, #6573d0);
+  box-shadow: 0 10px 24px rgba(63,81,181,.28);
+}
+.app-toolbar .brand{
+  display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px;
+}
+.app-toolbar .nav a[mat-button]{
+  text-transform:none; font-weight:600; letter-spacing:.2px; opacity:.95;
+}
+.app-toolbar .nav a[mat-button].active{ text-decoration: underline; }
+
+/* ---------- “Glass” cards with 3D depth ---------- */
+.glass-3d{
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.66);
+  border: 1px solid rgba(255,255,255,.45);
+  box-shadow:
+    0 22px 50px rgba(31,38,135,.14),
+    0 6px 16px rgba(0,0,0,.10);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.glass-3d:hover{ transform: translateY(-2px); }
+
+/* “pill” primary button */
+.primary-pill.mat-raised-button{
+  border-radius: 22px !important;
+  padding: 0 16px;
+  font-weight: 600;
+  box-shadow: 0 12px 22px rgba(63,81,181,.28), 0 6px 10px rgba(63,81,181,.18);
+}
+.primary-pill .mat-icon{ font-size:18px; line-height:18px; width:18px; height:18px; margin-right:6px; }
+
+/* table polish */
+table { width: 100%; }
+.mat-header-row{
+  position: sticky; top: 0; z-index: 1;
+  background: rgba(255,255,255,.9); backdrop-filter: blur(6px);
+}
+.mat-row:hover{ background: rgba(63,81,181,.05); }
+.mat-paginator{ border-top: 1px solid rgba(0,0,0,.06); }
+
+/* dialog glass look */
+.mat-dialog-container{
+  border-radius: 16px !important;
+  box-shadow: 0 26px 56px rgba(0,0,0,.25), 0 10px 24px rgba(63,81,181,.18) !important;
+}

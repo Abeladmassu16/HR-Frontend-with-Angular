@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { EmployeeService } from '../../../services/employee.service';
 import { DepartmentService } from '../../../services/department.service';
@@ -41,7 +41,6 @@ import { Employee } from '../../models/employee';
 export class EmployeeDialogComponent implements OnInit {
   form: FormGroup;
   departments: Department[] = [];
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { mode: 'create'|'edit', employee?: Employee },
     public ref: MatDialogRef<EmployeeDialogComponent>,
@@ -49,26 +48,20 @@ export class EmployeeDialogComponent implements OnInit {
     private employees: EmployeeService,
     private depts: DepartmentService
   ) {}
-
   ngOnInit() {
     this.depts.getAll().subscribe(d => this.departments = d);
     const e = this.data.employee || { firstName:'', lastName:'', email:'', departmentId:null, hireDate: new Date().toISOString(), salary: 0 };
     this.form = this.fb.group({
-      id: [e['id']],
-      firstName: [e.firstName, Validators.required],
-      lastName:  [e.lastName, Validators.required],
-      email:     [e.email, [Validators.required, Validators.email]],
+      id: [e['id']], firstName: [e.firstName, Validators.required],
+      lastName: [e.lastName, Validators.required],
+      email: [e.email, [Validators.required, Validators.email]],
       departmentId: [e.departmentId, Validators.required],
-      hireDate: [e.hireDate],
-      salary: [e.salary, [Validators.required, Validators.min(0)]]
+      hireDate: [e.hireDate], salary: [e.salary, [Validators.required, Validators.min(0)]]
     });
   }
-
   save() {
-    const val = { ...this.form.value, hireDate: new Date(this.form.value.hireDate).toISOString() };
-    const req = this.data.mode === 'create'
-      ? this.employees.add(val)
-      : this.employees.update(val);
+    const v = { ...this.form.value, hireDate: new Date(this.form.value.hireDate).toISOString() };
+    const req = this.data.mode === 'create' ? this.employees.add(v) : this.employees.update(v);
     req.subscribe(() => this.ref.close(true));
   }
 }

@@ -8,14 +8,14 @@ import { CandidatesComponent } from './features/candidates/candidates.component'
 const routes: Routes = [
   { path: '', redirectTo: 'departments', pathMatch: 'full' },
   { path: 'departments', component: DepartmentsComponent },
-  { path: 'employees', component: EmployeesComponent },
-  { path: 'companies', component: CompaniesComponent },   // <-- must exist
-  { path: 'candidates', component: CandidatesComponent }, // <-- must exist
+  { path: 'employees',   component: EmployeesComponent },
+  { path: 'companies',   component: CompaniesComponent },
+  { path: 'candidates',  component: CandidatesComponent },
   { path: '**', redirectTo: 'departments' }
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { useHash: true })], // keep hash while dev
+  imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}

@@ -1,9 +1,7 @@
-<mat-card class="card-3d" elevateOnHover>
+<mat-card class="glass-3d mat-elevation-z8" elevateOnHover tiltCard>
   <div style="display:flex; align-items:center; justify-content:space-between;">
     <h2 style="margin:0">Employees</h2>
-    <span>
-      <button mat-raised-button color="primary" (click)="openCreate()"><mat-icon></mat-icon> Add</button>
-    </span>
+    <button mat-raised-button color="primary" (click)="openCreate()"><mat-icon>add</mat-icon>&nbsp;Add</button>
   </div>
 
   <mat-form-field style="width:260px; margin:12px 0;">
@@ -12,37 +10,12 @@
 
   <div class="mat-elevation-z2">
     <table mat-table [dataSource]="data" matSort>
-
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-        <td mat-cell *matCellDef="let r">{{r.id}}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-        <td mat-cell *matCellDef="let r">{{r.firstName}} {{r.lastName}}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="department">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Department</th>
-        <td mat-cell *matCellDef="let r">{{ deptName(r.departmentId) }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let r">{{r.email}}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="hireDate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Hire Date</th>
-        <td mat-cell *matCellDef="let r">{{r.hireDate | date}}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="salary">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Salary</th>
-        <td mat-cell *matCellDef="let r">{{r.salary | number}}</td>
-      </ng-container>
-
+      <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th><td mat-cell *matCellDef="let r">{{r.id}}</td></ng-container>
+      <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th><td mat-cell *matCellDef="let r">{{r.firstName}} {{r.lastName}}</td></ng-container>
+      <ng-container matColumnDef="department"><th mat-header-cell *matHeaderCellDef mat-sort-header>Department</th><td mat-cell *matCellDef="let r">{{deptName(r.departmentId)}}</td></ng-container>
+      <ng-container matColumnDef="email"><th mat-header-cell *matHeaderCellDef>Email</th><td mat-cell *matCellDef="let r">{{r.email}}</td></ng-container>
+      <ng-container matColumnDef="hireDate"><th mat-header-cell *matHeaderCellDef mat-sort-header>Hire Date</th><td mat-cell *matCellDef="let r">{{r.hireDate | date}}</td></ng-container>
+      <ng-container matColumnDef="salary"><th mat-header-cell *matHeaderCellDef mat-sort-header>Salary</th><td mat-cell *matCellDef="let r">{{r.salary | number}}</td></ng-container>
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let r">
@@ -50,7 +23,6 @@
           <button mat-icon-button color="warn" (click)="delete(r.id)"><mat-icon>delete</mat-icon></button>
         </td>
       </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let r; columns: displayedColumns;"></tr>
     </table>

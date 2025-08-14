@@ -8,16 +8,11 @@ import { Department } from '../../models/department';
   styleUrls: ['./departments.component.scss']
 })
 export class DepartmentsComponent implements OnInit {
-  depts: Department[] = [];
-  newName = '';
-
-  constructor(private service: DepartmentService) {}
+  depts: Department[] = []; newName = '';
+  constructor(private api: DepartmentService) {}
   ngOnInit() { this.load(); }
-
-  load() { this.service.getAll().subscribe(d => this.depts = d); }
-  add() {
-    const name = this.newName.trim(); if(!name) return;
-    this.service.add({ id: 0, name } as any).subscribe(() => { this.newName=''; this.load(); });
-  }
-  remove(id: number) { this.service.delete(id).subscribe(() => this.load()); }
+  load() { this.api.getAll().subscribe(d => this.depts = d); }
+  add() { const name = this.newName.trim(); if(!name) return;
+    this.api.add({ id: 0, name } as any).subscribe(() => { this.newName=''; this.load(); }); }
+  remove(id: number) { this.api.delete(id).subscribe(() => this.load()); }
 }
