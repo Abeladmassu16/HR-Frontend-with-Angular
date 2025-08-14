@@ -5,6 +5,11 @@
   </span>
   <span style="flex:1 1 auto"></span>
   <nav class="nav">
+    <!-- NEW -->
+    <a mat-button routerLink="/dashboard"
+       routerLinkActive="active"
+       [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+
     <a mat-button routerLink="/departments" routerLinkActive="active">Departments</a>
     <a mat-button routerLink="/employees"   routerLinkActive="active">Employees</a>
     <a mat-button routerLink="/companies"   routerLinkActive="active">Companies</a>
@@ -14,4 +19,7 @@
 
 <div class="app-container">
   <router-outlet></router-outlet>
+  <a mat-fab class="fab-dashboard" routerLink="/dashboard" aria-label="Go to dashboard">
+  <mat-icon>dashboard</mat-icon>
+</a>
 </div>

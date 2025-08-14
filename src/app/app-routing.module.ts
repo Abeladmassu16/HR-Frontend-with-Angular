@@ -4,9 +4,11 @@ import { DepartmentsComponent } from './features/departments/departments.compone
 import { EmployeesComponent } from './features/employees/employees.component';
 import { CompaniesComponent } from './features/companies/companies.component';
 import { CandidatesComponent } from './features/candidates/candidates.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'departments', pathMatch: 'full' },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: 'dashboard',  component: DashboardComponent },
   { path: 'departments', component: DepartmentsComponent },
   { path: 'employees',   component: EmployeesComponent },
   { path: 'companies',   component: CompaniesComponent },

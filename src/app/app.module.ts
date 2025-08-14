@@ -19,6 +19,7 @@ import { CompaniesComponent } from './features/companies/companies.component';
 import { CompanyDialogComponent } from './features/companies/company-dialog.component';
 import { CandidatesComponent } from './features/candidates/candidates.component';
 import { CandidateDialogComponent } from './features/candidates/candidate-dialog.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
 
 // Directives
 import { ElevateOnHoverDirective } from './directives/elevate-on-hover.directive';
@@ -33,7 +34,7 @@ import { TiltCardDirective } from './directives/tilt-card.directive';
     DepartmentsComponent, EmployeesComponent, EmployeeDialogComponent,
     CompaniesComponent, CompanyDialogComponent,
     CandidatesComponent, CandidateDialogComponent,
-    ElevateOnHoverDirective, TiltCardDirective
+    ElevateOnHoverDirective, TiltCardDirective, DashboardComponent
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule, HttpClientModule,

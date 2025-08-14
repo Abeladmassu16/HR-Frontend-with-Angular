@@ -1,0 +1,135 @@
+<!-- HR Frontend Dashboard Component -->
+<div class="hr-dashboard">
+  <!-- Header -->
+  
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="content-grid">
+
+      <!-- Employees Section -->
+      <section class="employees-section">
+        <div class="card glass-card card-3d">
+          <div class="card-header">
+            <h2 class="section-title">Employees</h2>
+          </div>
+
+          <!-- Employee Table -->
+          <div class="table-container">
+            <div class="table-wrapper">
+              <table class="employee-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Email</th>
+                    <th>Hire Date</th>
+                    <th>Salary</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let employee of employees; let i = index"
+                      [class.even]="i % 2 === 0"
+                      [class.odd]="i % 2 !== 0">
+                    <td class="employee-id">{{ employee.id }}</td>
+                    <td class="employee-name">{{ employee.name }}</td>
+                    <td class="employee-department">{{ employee.department }}</td>
+                    <td class="employee-email">{{ employee.email }}</td>
+                    <td class="employee-hire-date">{{ employee.hireDate }}</td>
+                    <td class="employee-salary">{{ employee.salary | number }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Candidates Section -->
+      <aside class="candidates-section">
+        <div class="card glass-card card-3d">
+          <h2 class="section-title">Candidates</h2>
+
+          <!-- Candidate List -->
+          <div class="candidate-list">
+            <div *ngFor="let candidate of candidates" class="candidate-item">
+              <span class="candidate-name">{{ candidate.name }}</span>
+              <span class="badge" [ngClass]="getStatusClass(candidate.status)">
+                {{ candidate.status }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Selected Candidates -->
+          <div class="selected-candidates">
+            <div class="selected-header">
+              <div class="selected-icon">👥</div>
+              <span class="selected-label">candidates</span>
+            </div>
+
+            <div class="selection-list">
+              <div *ngFor="let candidate of selectedCandidatesList" class="selection-item">
+                <span class="selection-name">{{ candidate.name }}</span>
+                <button
+                  class="checkbox"
+                  [class.checked]="candidate.selected"
+                  (click)="toggleCandidateSelection(candidate.name)">
+                  <span *ngIf="candidate.selected" class="checkmark">✓</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Add Employee Modal -->
+  <div class="modal-overlay" *ngIf="isAddModalOpen" (click)="closeAddModal()">
+    <div class="modal glass-card" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h3 class="modal-title">Add Employee</h3>
+      </header>
+
+      <form class="modal-form" (ngSubmit)="addEmployee()">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input input-3d" placeholder="Enter name"
+                 [(ngModel)]="newEmployee.name" name="name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <!-- dynamic options from your real Departments -->
+          <select class="form-select input-3d"
+                  [(ngModel)]="newEmployee.departmentId"
+                  name="departmentId">
+            <option [ngValue]="null">---</option>
+            <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hire Date</label>
+          <div class="input-with-icon">
+            <input type="date" class="form-input input-3d"
+                   [(ngModel)]="newEmployee.hireDate" name="hireDate">
+            <span class="input-icon">📅</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Salary</label>
+          <input type="number" class="form-input input-3d" placeholder="$"
+                 [(ngModel)]="newEmployee.salary" name="salary">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-3d">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
