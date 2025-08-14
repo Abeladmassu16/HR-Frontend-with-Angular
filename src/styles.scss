@@ -1,1 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: linear-gradient(135deg,#f5f7fb,#e9f0ff);
+}
+
+/* soft 3D cards and hover */
+.card-3d { border-radius: 16px; padding: 16px; background: #fff; }
+.card-3d.mat-elevation-z8 { transition: box-shadow .2s ease, transform .2s ease; }
+.card-3d:hover { transform: translateY(-2px); }
