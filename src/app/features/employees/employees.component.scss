@@ -1,1 +1,61 @@
-table { width: 100%; }
+/* Error banner */
+.error-banner { color:#7a1020; font-weight:700; margin-bottom:12px; }
+
+/* Grid for the employees table */
+.table.emp {
+  .thead, .tr {
+    display: grid;
+    grid-template-columns: 64px 1.6fr 2fr 1.2fr 1fr 120px 24px; /* ID | Name | Email | Date | Role | Actions | spacer */
+    align-items: center;
+    gap: 12px;
+  }
+  .thead {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    font-weight: 800;
+  }
+  .th.right, .td.right { text-align: right; }
+  .tr { padding: 14px 12px; border-top: 1px solid rgba(0,0,0,.05); }
+  .tr.alt { background: rgba(255,255,255,.06); }
+}
+
+/* Toolbar input */
+.input-wrap { display:flex; align-items:center; gap:8px; width:100%; }
+.input-wrap .icon { opacity:.7; }
+.field {
+  width: 100%; border: 1px solid rgba(255,255,255,.45); border-radius: 10px;
+  padding: 12px 14px; background: rgba(255,255,255,.65);
+}
+
+/* Buttons */
+.btn { border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+.btn.mint { background: linear-gradient(90deg, #33c0a5, #6ad7c3); color: #0b2e27; }
+.icon-pill { border: none; border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+.icon-pill.primary { background: #cfe1ff; }
+.icon-pill.danger { background: #ffcfd1; }
+
+/* Modal */
+.modal-backdrop{
+  position: fixed; inset: 0; background: rgba(0,0,0,.38);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  z-index: 50;
+}
+.modal{
+  position: fixed; left: 50%; top: 12vh; transform: translateX(-50%);
+  width: 92%; max-width: 640px; z-index: 60; padding: 16px; border-radius: 16px;
+}
+.modal-body .form-row{ display: grid; gap: 6px; margin-bottom: 10px; }
+.modal-body label{ font-weight: 800; opacity: .85; }
+.modal-actions{ display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
+
+/* Optional responsive tweaks */
+@media (max-width: 900px) {
+  .table.emp .thead, .table.emp .tr {
+    grid-template-columns: 48px 1.4fr 1.6fr 1.1fr 0.9fr 96px 16px;
+  }
+}
+@media (max-width: 640px) {
+  .table.emp .thead, .table.emp .tr {
+    grid-template-columns: 40px 1.2fr 1.4fr 1fr 0.8fr 84px 12px;
+  }
+}

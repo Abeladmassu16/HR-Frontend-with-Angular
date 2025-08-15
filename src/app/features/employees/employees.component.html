@@ -1,62 +1,107 @@
-<mat-card class="glass-3d mat-elevation-z8" elevateOnHover tiltCard>
-  <div class="section-head">
-    <h2>Employees</h2>
-    <button mat-raised-button class="primary-pill" (click)="openCreate()">
-      <mat-icon>add</mat-icon><span>Add</span>
-    </button>
+<div class="canvas">
+  <div class="frame">
+    <!-- Title -->
+    <div class="page-head">
+      <h1 class="title">Employees</h1>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="panel glassy error-banner">
+      {{ error }}
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar glassy">
+      <div class="input-wrap">
+        <span class="icon">🔎</span>
+        <input
+          class="field"
+          type="text"
+          placeholder="Search employees"
+          [(ngModel)]="employeeFilter"
+          (input)="applyFilter()" />
+      </div>
+
+      <button class="btn mint" type="button" (click)="openAdd()">
+        <span class="plus">+</span>
+        Add
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <section class="panel glassy" *ngIf="loading">
+      Loading employees…
+    </section>
+
+    <!-- Table -->
+    <section class="panel glassy" *ngIf="!loading">
+      <div class="table emp">
+        <div class="thead">
+          <div class="th muted">ID</div>
+          <div class="th muted">Name</div>
+          <div class="th muted">Email</div>
+          <div class="th muted">Hire Date</div>
+          <div class="th muted">Role</div>
+          <div class="th muted right">Actions</div>
+          <div class="ghost"></div>
+        </div>
+
+        <div
+          class="tr"
+          *ngFor="let e of employeesView; let i = index; trackBy: trackById"
+          [class.alt]="i % 2 === 1">
+          <div class="td mono muted">{{ e.id }}</div>
+          <div class="td strong">{{ e.name || '—' }}</div>
+          <div class="td">{{ e.email || '—' }}</div>
+          <div class="td mono muted">{{ e.hireDate ? (e.hireDate | date:'MM/dd/yyyy') : '—' }}</div>
+          <div class="td">{{ e.role || '—' }}</div>
+
+          <div class="td right">
+            <button class="icon-pill primary" type="button" title="Edit" (click)="editEmployee(e)">✏️</button>
+            <button class="icon-pill danger" type="button" title="Delete" (click)="deleteEmployee(e)">🗑️</button>
+          </div>
+          <div class="ghost"></div>
+        </div>
+
+        <div class="tr" *ngIf="employeesView.length === 0">
+          <div class="td muted" style="grid-column:1 / -1;">No employees to display.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Add Modal -->
+    <div class="modal-backdrop" *ngIf="addOpen" (click)="closeAdd()"></div>
+    <div class="modal glassy" *ngIf="addOpen" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3 class="title" style="font-size:18px;">Add Employee</h3>
+      </div>
+
+      <form (ngSubmit)="saveNew()" #addForm="ngForm" class="modal-body">
+        <div class="form-row">
+          <label>Name</label>
+          <input #nameInput class="field" type="text" name="name" required [(ngModel)]="newEmp.name" />
+        </div>
+
+        <div class="form-row">
+          <label>Email</label>
+          <input class="field" type="email" name="email" [(ngModel)]="newEmp.email" />
+        </div>
+
+        <div class="form-row">
+          <label>Hire Date</label>
+          <input class="field" type="date" name="hireDate" [(ngModel)]="newEmp.hireDate" />
+        </div>
+
+        <div class="form-row">
+          <label>Role</label>
+          <input class="field" type="text" name="role" [(ngModel)]="newEmp.role" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn icon-pill" (click)="closeAdd()">Cancel</button>
+          <button type="submit" class="btn mint" [disabled]="addSaving || !addForm.form.valid">Create</button>
+        </div>
+      </form>
+    </div>
   </div>
-
-  <mat-form-field style="width:260px; margin:12px 0;">
-    <input matInput placeholder="Filter" (keyup)="applyFilter($event.target.value)">
-  </mat-form-field>
-
-  <div class="table-wrap mat-elevation-z2">
-    <table mat-table [dataSource]="data" matSort>
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-        <td mat-cell *matCellDef="let r">{{ r.id }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-        <td mat-cell *matCellDef="let r">{{ r.firstName }} {{ r.lastName }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="department">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Department</th>
-        <td mat-cell *matCellDef="let r">{{ deptName(r.departmentId) }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let r">{{ r.email }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="hireDate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Hire Date</th>
-        <td mat-cell *matCellDef="let r">{{ r.hireDate | date }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="salary">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Salary</th>
-        <td mat-cell *matCellDef="let r">{{ r.salary | number }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let r">
-          <button mat-icon-button class="icon-btn edit" (click)="openEdit(r)">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button class="icon-btn delete" (click)="delete(r.id)">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let r; columns: displayedColumns;"></tr>
-    </table>
-    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5,10,20]"></mat-paginator>
-  </div>
-</mat-card>
+</div>
