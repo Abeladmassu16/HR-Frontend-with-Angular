@@ -1,693 +1,924 @@
-// HR Frontend Component Styles
-// Modern 3D white and light green design system
+/* ================= GLASS DASHBOARD (exact frosted look, darker & glassier) ================= */
 
-// Variables
-:root {
-  // Colors
-  --background: hsl(0, 0%, 98%);
-  --foreground: hsl(210, 20%, 10%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(210, 20%, 10%);
-  --primary: hsl(145, 63%, 45%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(145, 25%, 94%);
-  --secondary-foreground: hsl(210, 20%, 10%);
-  --muted: hsl(145, 15%, 96%);
-  --muted-foreground: hsl(210, 10%, 45%);
-  --accent: hsl(145, 40%, 85%);
-  --accent-foreground: hsl(210, 20%, 10%);
-  --destructive: hsl(0, 72%, 51%);
-  --destructive-foreground: hsl(0, 0%, 100%);
-  --border: hsl(145, 20%, 88%);
-  --input: hsl(145, 15%, 96%);
-  --ring: hsl(145, 63%, 45%);
-  --radius: 1rem;
+/* ---- Color tokens ---- */
+:root{
+  /* your dark mint background */
+  --bg-top:#18483a;
+  --bg-mid:#1f6c5a;
+  --bg-bot:#7bb6aa;
+  --blob-a:#2a7865;
+  --blob-b:#cbe9e2;
 
-  // Gradient colors
-  --gradient-start: hsl(145, 25%, 95%);
-  --gradient-end: hsl(145, 40%, 90%);
-  --surface-primary: hsl(0, 0%, 100%);
-  --surface-secondary: hsl(145, 20%, 98%);
-  --surface-tertiary: hsl(145, 15%, 96%);
-  
-  // 3D shadow system
-  --shadow-light: hsl(145, 20%, 85%);
-  --shadow-medium: hsl(145, 25%, 80%);
-  --shadow-dark: hsl(145, 30%, 75%);
-  
-  // Glass effects
-  --glass-bg: hsla(0, 0%, 100%, 0.85);
-  --glass-border: hsla(145, 30%, 85%, 0.3);
-  --glass-backdrop: hsla(145, 15%, 95%, 0.8);
+  --mint:#33c0a5;
+  --mint-2:#6ad7c3;
+  --text:#0f172a;
+  --muted:#5f6c76;
+
+  /* glass materials */
+  --glass-10: rgba(255,255,255,.10);
+  --glass-14: rgba(255,255,255,.14);
+  --glass-18: rgba(255,255,255,.18);
+  --glass-22: rgba(255,255,255,.22);
+  --glass-stroke: rgba(255,255,255,.45);
+  --glass-inner: rgba(255,255,255,.70); /* ↑ a touch brighter for crisper edges */
+
+  --shadowD: rgba(13, 18, 25, .25);
+  --shadowM: rgba(13, 18, 25, .12);
+  --ring: rgba(51,192,165,.22);
 }
 
-// Base styles
-.hr-dashboard {
-  min-height: 100vh;
-  padding: 1rem;
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+/* optional white theme support if you already toggle .theme-white on <html> */
+:root.theme-white{
+  --bg-top:#eef2f7; --bg-mid:#e9edf3; --bg-bot:#e4e9f0;
+  --blob-a:#e8edf3; --blob-b:#f2f6fb;
+}
+
+/* ---- Background canvas ---- */
+.canvas{
+  min-height: calc(100vh - 64px);
+  padding: 28px 20px 44px;
+  background:
+    radial-gradient(1100px 620px at 12% -12%, var(--blob-a) 0%, transparent 62%),
+    radial-gradient(1200px 700px at 92% 0%,  var(--blob-b) 0%, transparent 58%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 46%, var(--bg-bot) 100%);
+  display:flex; justify-content:center; align-items:flex-start;
+  color:var(--text);
+  font-family:Poppins, Roboto, "Helvetica Neue", Arial, sans-serif;
   position: relative;
-  color: var(--foreground);
-  
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-      radial-gradient(circle at 20% 80%, hsla(145, 40%, 92%, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsla(145, 50%, 88%, 0.4) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, hsla(145, 30%, 94%, 0.2) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  @media (min-width: 768px) {
-    padding: 2rem;
-  }
+}
+/* darker vignette to make glass pop */
+.canvas::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(1200px 800px at 50% 0%, rgba(0,0,0,.12), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(0,0,0,.10), transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, rgba(0,0,0,.10), transparent 60%);
 }
 
-// Header styles
-.header {
-  margin-bottom: 1.5rem;
-  
-  @media (min-width: 768px) {
-    margin-bottom: 2rem;
-  }
+/* ---- GLASS PRIMITIVES ---- */
+@mixin glass($bg, $blur:20px){ /* ↑ default blur for stronger frost */
+  background: $bg;
+  backdrop-filter: blur($blur) saturate(130%);  /* ↑ saturation for color-rich glass */
+  -webkit-backdrop-filter: blur($blur) saturate(130%);
+  border: 1px solid var(--glass-stroke);
+  box-shadow:
+    0 32px 90px var(--shadowM),     /* deeper outer shadow */
+    0 10px 28px var(--shadowM),
+    inset 0 1px 0 var(--glass-inner); /* brighter inner rim */
 }
 
-.header-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  
-  @media (min-width: 1024px) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+/* specular highlights + micro-reflections */
+@mixin glass_overlays {
+  &::before{
+    content:""; position:absolute; inset:0; border-radius: inherit; pointer-events:none;
+    background:
+      radial-gradient(120% 120% at -10% -20%, rgba(255,255,255,.22), transparent 60%),
+      radial-gradient(120% 120% at 120% -10%, rgba(255,255,255,.16), transparent 65%),
+      linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 60%);
+    mix-blend-mode: screen;
   }
-}
-
-.header-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  
-  @media (min-width: 1024px) {
-    flex-direction: row;
-    align-items: center;
-    gap: 2rem;
+  &::after{
+    content:""; position:absolute; inset:0; border-radius: inherit; pointer-events:none;
+    background:
+      radial-gradient(12px 12px at 20% 15%, rgba(255,255,255,.25), transparent 60%),
+      radial-gradient(20px 20px at 78% 28%, rgba(255,255,255,.18), transparent 60%),
+      radial-gradient(14px 14px at 62% 78%, rgba(255,255,255,.12), transparent 60%);
+    opacity:.35;
   }
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+/* main frame */
+.frame{
+  width:100%; max-width:1120px; border-radius:22px; position:relative; padding:22px;
+  @include glass(var(--glass-22), 22px); /* ↑ */
+  @include glass_overlays;
+}
+.frame::before{ /* subtle inner glow (kept) */
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background:
+    radial-gradient(120% 120% at -10% -20%, rgba(255,255,255,.22), transparent 60%),
+    radial-gradient(120% 120% at 120% -10%, rgba(255,255,255,.16), transparent 65%);
 }
 
-.brand-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  background: linear-gradient(135deg, hsl(145, 60%, 55%) 0%, hsl(145, 70%, 45%) 100%);
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px -2px var(--shadow-medium);
-  
-  span {
-    color: white;
-    font-weight: bold;
-    font-size: 1.125rem;
-  }
+/* ---- Header (title + tabs + avatar) ---- */
+.row.header{
+  display:grid; grid-template-columns: 1fr auto 44px; align-items:center; gap:18px; margin-bottom:16px;
 }
-
-.brand-title {
-  color: hsl(210, 30%, 25%);
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
+.title{ font-size:32px; font-weight:700; letter-spacing:.2px; }
+.tabs{ display:flex; align-items:center; gap:26px; }
+.tab{
+  background:transparent; border:none; cursor:pointer; font-weight:700; color:#f5fffb; /* ↑ contrast on dark bg */
+  padding:6px 0; position:relative; opacity:.95;
 }
-
-.navigation {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  overflow-x: auto;
+.tab.active::after{
+  content:""; position:absolute; left:0; right:0; bottom:-8px; height:3px; border-radius:3px;
+  background: linear-gradient(90deg, var(--mint), var(--mint-2));
+  box-shadow: 0 8px 18px var(--ring);
 }
-
-.nav-button {
-  padding: 0.625rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  border: none;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.8);
-  color: hsl(210, 15%, 40%);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  
-  &:hover {
-    color: hsl(210, 20%, 25%);
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  &.active {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 4px 12px -2px hsl(145, 40%, 70%);
-    transform: scale(1.05);
-  }
-  
-  @media (min-width: 768px) {
-    padding: 0.75rem 1rem;
-  }
-}
-
-// Main content
-.main-content {
-  width: 100%;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  
-  @media (min-width: 1280px) {
-    grid-template-columns: 2fr 1fr;
-    gap: 1.5rem;
-  }
-}
-
-// Card styles
-.card {
-  border-radius: var(--radius);
-  padding: 1rem;
-  
-  @media (min-width: 768px) {
-    padding: 1.5rem;
-  }
-}
-
-.glass-card {
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  box-shadow: 
-    0 8px 32px -8px var(--shadow-light),
-    0 4px 16px -4px var(--shadow-medium),
-    inset 0 1px 0 var(--surface-primary);
+.circle{
+  width:44px; height:44px; border-radius:14px; color:#e7fffa; display:grid; place-items:center;
   position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(145deg, 
-      var(--surface-primary) 0%, 
-      var(--surface-secondary) 100%);
-    border-radius: inherit;
-    z-index: -1;
-  }
+  @include glass(var(--glass-18), 18px);
+  @include glass_overlays;
 }
 
-.card-3d {
-  transform-style: preserve-3d;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  &:hover {
-    transform: translateY(-4px) rotateX(2deg);
-    box-shadow: 
-      0 16px 48px -8px var(--shadow-light),
-      0 8px 24px -4px var(--shadow-medium),
-      inset 0 1px 0 var(--surface-primary);
-  }
+/* ---- Cards & separators ---- */
+.card{ position:relative; border-radius:18px; padding:22px; color:#0e2b24; }
+.card-title{ font-size:22px; font-weight:700; margin-bottom:14px; color:#0e2b24; }
+
+.neo      { position:relative; @include glass(var(--glass-14), 18px); @include glass_overlays; }
+.neo-soft { position:relative; @include glass(var(--glass-18), 22px); @include glass_overlays; }
+/* inset surface (for tables) */
+.neo-inset{ box-shadow: inset 0 10px 24px rgba(13,18,25,.10), inset 0 1px 0 var(--glass-inner); }
+
+/* top row layout */
+.grid.top{
+  margin-top:8px;
+  display:grid; grid-template-columns: 1fr 2fr; gap:20px; position:relative;
+}
+/* GLASS SEPARATOR between KPIs and Employees (no HTML change) */
+.grid.top::after{
+  content:""; display:block; height:18px; margin:24px 6px 10px; border-radius:14px;
+  position:relative;
+  @include glass(var(--glass-14), 14px);
+  @include glass_overlays;
 }
 
-// Section titles
-.section-title {
-  color: hsl(210, 30%, 25%);
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
+/* ---- Theme segmented control (glass track & pill) ---- */
+.theme-card{ padding-bottom:26px; }
+.segmented{
+  width:320px; padding:8px; border-radius:16px; position:relative;
+  @include glass(var(--glass-14), 14px);
+  @include glass_overlays;
+  display:flex; gap:10px;
+}
+.seg{
+  border:none; cursor:pointer; border-radius:14px; padding:10px 26px; font-weight:700; color:#1f3a34;
+  background:transparent; transition:.15s;
+}
+.seg.on{
+  @include glass(var(--glass-22), 12px);
+  background: linear-gradient(180deg, rgba(198,237,227,.72), rgba(159,225,208,.64));
+  color:#0c2922;
 }
 
-// Employees section
-.employees-section {
-  width: 100%;
+/* ---- KPI cluster (two rows / two columns) ---- */
+.kpi-wrap{ display:grid; grid-auto-rows:1fr; gap:18px; }
+.kpi-wrap .inner{
+  display:grid; grid-template-columns:1fr 1px 1fr; align-items:center; padding:18px; border-radius:14px; position:relative;
+  @include glass(var(--glass-18), 18px); /* ↑ */
+  @include glass_overlays;
+}
+.kpi .big{ font-size:40px; line-height:1; font-weight:800; color:#0e2b24; }
+.kpi .label{ margin-top:8px; color:rgba(14,43,36,.8); font-weight:700; }
+.divider{ width:1px; height:100%; background: linear-gradient(180deg, transparent, rgba(255,255,255,.55), transparent); }
+
+/* ---- Employees card (glass block) ---- */
+.employees-card{
+  margin-top:14px; padding-top:20px; border-radius:18px; position:relative;
+  @include glass(var(--glass-22), 22px); /* ↑ */
+  @include glass_overlays;
+}
+.employees-card .card-title{ margin-bottom:12px; color:#0e2b24; }
+.employees-card .icon-btn{
+  position:absolute; right:18px; top:18px; background:transparent; border:none; color:#ddfffa; cursor:pointer;
 }
 
-.card-header {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+/* ---- Table (frosted container + soft rows) ---- */
+.table{
+  margin-top:10px; border-radius:16px; overflow:hidden; position:relative;
+  @include glass(var(--glass-18), 18px); /* ↑ */
+  @include glass_overlays;
+}
+.thead,.tr{
+  display:grid; grid-template-columns: 2fr 3fr 2fr 1.4fr 24px; gap:12px; align-items:center;
+}
+.thead{
+  padding:14px 18px; color:#e4fffa; font-weight:700;
+  background: linear-gradient(180deg, rgba(255,255,255,.40), rgba(255,255,255,.22));
+  border-bottom: 1px solid rgba(255,255,255,.50);
+}
+.tr{
+  padding:18px;
+  background: rgba(255,255,255,.14);      /* ↑ slightly more contrast */
+  border-top: 1px solid rgba(255,255,255,.40);
+  color:#0e2b24;
+}
+.tr.alt{ background: rgba(255,255,255,.20); }
+
+.strong{ font-weight:700; }
+.muted{ color:rgba(14,43,36,.75); }
+.mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.ghost{ width:24px; height:1px; }
+
+/* pill badge (role) */
+.pill{
+  display:inline-block; padding:7px 16px; border-radius:999px; font-weight:800; color:#083d33; letter-spacing:.2px; position:relative;
+  @include glass(var(--glass-22), 12px);
+  background: linear-gradient(180deg, rgba(198,237,227,.78), rgba(159,225,208,.70));
+  @include glass_overlays;
 }
 
-// Button styles
-.btn {
-  padding: 0.625rem 1.5rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
+/* ---- Little polish for hover lift on cards ---- */
+.card:hover{ transform: translateY(-2px); transition: transform .15s ease; }
+
+
+/* ===== FINAL POLISH: darker, clearer glass (drop-in overrides) ===== */
+
+/* tweakable knobs */
+:root{
+  --glass-alpha-ui: .26;     /* main cards (employees/table) */
+  --glass-alpha-kpi: .22;    /* KPI tiles */
+  --glass-alpha-chip: .24;   /* pill + segmented ON */
+  --glass-blur-ui: 22px;
+  --glass-blur-kpi: 18px;
+  --glass-stroke-strong: rgba(255,255,255,.60);
+  --glass-shadow-a: 0 30px 80px rgba(0,0,0,.16);
+  --glass-shadow-b: 0 10px 28px rgba(0,0,0,.12);
+}
+
+/* slightly darker vignette so glass pops more */
+.canvas::after{
+  background:
+    radial-gradient(1200px 800px at 50% 0%, rgba(0,0,0,.16), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(0,0,0,.12), transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, rgba(0,0,0,.12), transparent 60%);
+}
+
+/* stronger, clearer frame */
+.frame{
+  backdrop-filter: blur(24px) saturate(135%);
+  -webkit-backdrop-filter: blur(24px) saturate(135%);
+  border-color: var(--glass-stroke-strong);
+  box-shadow: var(--glass-shadow-a), var(--glass-shadow-b), inset 0 1px 0 var(--glass-inner);
+}
+
+/* KPI tiles */
+.kpi-wrap .inner{
+  background: rgba(255,255,255,var(--glass-alpha-kpi));
+  backdrop-filter: blur(var(--glass-blur-kpi)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-kpi)) saturate(130%);
+  border-color: var(--glass-stroke-strong);
+  box-shadow: var(--glass-shadow-a), var(--glass-shadow-b), inset 0 1px 0 var(--glass-inner);
+}
+.kpi .big{ color:#0e2b24; }
+.kpi .label{ color: rgba(14,43,36,.85); }
+
+/* clearer separator between KPI and table */
+.grid.top::after{
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border-color: var(--glass-stroke-strong);
+  box-shadow: inset 0 1px 0 var(--glass-inner);
+}
+
+/* Employees card + table container */
+.employees-card{
+  background: rgba(255,255,255,var(--glass-alpha-ui));
+  backdrop-filter: blur(var(--glass-blur-ui)) saturate(135%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-ui)) saturate(135%);
+  border-color: var(--glass-stroke-strong);
+  box-shadow: var(--glass-shadow-a), var(--glass-shadow-b), inset 0 1px 0 var(--glass-inner);
+  color:#0e2b24;
+}
+.table{
+  background: rgba(255,255,255,var(--glass-alpha-ui));
+  backdrop-filter: blur(calc(var(--glass-blur-ui) - 2px)) saturate(130%);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur-ui) - 2px)) saturate(130%);
+  border-color: var(--glass-stroke-strong);
+  box-shadow: var(--glass-shadow-a), var(--glass-shadow-b), inset 0 1px 0 var(--glass-inner);
+}
+
+/* table text contrast */
+.thead{ color:#0e2b24; }
+.tr{ color:#0e2b24; background: rgba(255,255,255,.18); }
+.tr.alt{ background: rgba(255,255,255,.24); }
+
+/* segmented control + role pills a bit denser */
+.seg.on{
+  background: linear-gradient(180deg, rgba(198,237,227,.82), rgba(159,225,208,.74));
+  border-color: var(--glass-stroke-strong);
+}
+.pill{
+  background: linear-gradient(180deg, rgba(198,237,227,.84), rgba(159,225,208,.76));
+  border-color: var(--glass-stroke-strong);
+}
+
+/* stronger glints on glass blocks */
+.neo::before, .neo::after,
+.kpi-wrap .inner::before, .kpi-wrap .inner::after,
+.employees-card::before, .employees-card::after,
+.table::before, .table::after,
+.seg.on::before, .seg.on::after,
+.pill::before, .pill::after{
+  opacity:.55;   /* was ~.35 from earlier mixin; boosts the specular look */
+}
+
+
+/* ====== KPI container, separator, and table clarity (drop-in overrides) ====== */
+
+/* Stronger vignette so glass pops */
+.canvas::after{
+  background:
+    radial-gradient(1200px 800px at 50% 0%, rgba(0,0,0,.18), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(0,0,0,.14), transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, rgba(0,0,0,.14), transparent 60%);
+}
+
+/* Make the whole KPI area a clear glass CARD */
+.kpi-wrap{
+  /* keeps your grid layout */
+  position: relative;
+  padding: 18px;
+  margin-top: 2px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.60);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.14),
+    0 12px 28px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+/* Keep each inner tile glassy and distinct inside the container */
+.kpi-wrap .inner{
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.10),
+    0 8px 20px rgba(0,0,0,.08),
+    inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+/* Sharper type inside KPIs */
+.kpi .big   { color:#0b231d; }
+.kpi .label { color:rgba(11,35,29,.86); }
+
+/* Clearer glass separator between KPIs and Employees */
+.grid.top::after{
+  background: rgba(255,255,255,.24);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.58);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+/* Employees card + table: a touch denser and higher contrast */
+.employees-card{
+  background: rgba(255,255,255,.26);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  border-color: rgba(255,255,255,.60);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.16),
+    0 12px 28px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.78);
+  color:#0e2b24;
+}
+
+.table{
+  background: rgba(255,255,255,.26);
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  border-color: rgba(255,255,255,.60);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.16),
+    0 12px 28px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+.thead{ color:#0e2b24; }
+.tr{ color:#0e2b24; background: rgba(255,255,255,.20); }
+.tr.alt{ background: rgba(255,255,255,.26); }
+
+/* Segmented ON & role pill—slightly denser glass chips */
+.seg.on{
+  background: linear-gradient(180deg, rgba(198,237,227,.86), rgba(159,225,208,.78));
+  border-color: rgba(255,255,255,.60);
+}
+.pill{
+  background: linear-gradient(180deg, rgba(198,237,227,.88), rgba(159,225,208,.80));
+  border-color: rgba(255,255,255,.60);
+}
+
+/* ======= Glass refinement: softer shadow, crisper cards & KPIs ======= */
+
+/* Balanced ambient shadow for all glass blocks (no offset slab) */
+:root{
+  --glass-ambient-a: 0 24px 60px rgba(0,0,0,.12);
+  --glass-ambient-b: 0 8px 22px rgba(0,0,0,.10);
+  --glass-stroke-strong: rgba(255,255,255,.62);
+}
+
+/* Frame — softer ambient, brighter rim */
+.frame{
+  backdrop-filter: blur(22px) saturate(132%);
+  -webkit-backdrop-filter: blur(22px) saturate(132%);
+  border-color: var(--glass-stroke-strong);
+  box-shadow: var(--glass-ambient-a), var(--glass-ambient-b), inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+/* KPI container as a single glass card (so it matches the mock) */
+.kpi-wrap{
+  /* preserves your grid; just adds the pane */
+  margin: 0;               /* remove any push to the right */
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid var(--glass-stroke-strong);
+  box-shadow: var(--glass-ambient-a), var(--glass-ambient-b), inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+/* Each KPI tile inside the container—slightly denser & clearer */
+.kpi-wrap .inner{
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.56);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.10),
+    0 6px 18px rgba(0,0,0,.08),
+    inset 0 1px 0 rgba(255,255,255,.76);
+}
+
+/* KPI text clarity */
+.kpi .big   { color:#0d241d; font-weight:800; }
+.kpi .label { color:rgba(13,36,29,.85); }
+.divider    { opacity:.7; }
+
+/* Glass separator — thinner, clearer */
+.grid.top::after{
+  height: 14px;
+  margin: 22px 6px 12px;
+  background: rgba(255,255,255,.24);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border: 1px solid var(--glass-stroke-strong);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+/* Employees card + table — same ambient shadow & brighter edge */
+.employees-card,
+.table{
+  background: rgba(255,255,255,.26);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  border-color: var(--glass-stroke-strong);
+  box-shadow: var(--glass-ambient-a), var(--glass-ambient-b), inset 0 1px 0 rgba(255,255,255,.78);
+  color:#0e2b24;
+}
+
+/* Table text contrast and row clarity */
+.thead{ color:#0e2b24; }
+.tr{ color:#0e2b24; background: rgba(255,255,255,.20); }
+.tr.alt{ background: rgba(255,255,255,.26); }
+
+/* Chips a touch denser (match the pane) */
+.seg.on{
+  background: linear-gradient(180deg, rgba(198,237,227,.86), rgba(159,225,208,.78));
+  border-color: var(--glass-stroke-strong);
+}
+.pill{
+  background: linear-gradient(180deg, rgba(198,237,227,.88), rgba(159,225,208,.80));
+  border-color: var(--glass-stroke-strong);
+}
+/* ===== KPI -> four separate glass tiles (no markup change) ===== */
+
+/* Remove the big pane around KPIs */
+.kpi-wrap{
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+
+  /* Make all KPI items flow as a single grid */
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+@media (min-width: 1200px){
+  .kpi-wrap{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* Flatten each row wrapper so its children (the two KPIs) become grid items */
+.kpi-wrap .inner{
+  display: contents !important;  /* supported in modern browsers */
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Hide the vertical divider that used to separate two KPIs inside a row */
+.kpi-wrap .inner .divider{ display: none !important; }
+
+/* Style each KPI as its own glass card */
+.kpi{
+  border-radius: 16px;
+  padding: 18px 22px;
+  background: rgba(255,255,255,.26);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.60);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.12),
+    0 8px 22px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+/* Typography inside the KPI tiles */
+.kpi .big   { font-size: 40px; line-height: 1; font-weight: 800; color:#0d241d; }
+.kpi .label { margin-top: 8px; font-weight: 700; color: rgba(13,36,29,.86); }
+
+
+/* A11y helper */
+.sr-only {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+
+/* Container */
+.theme-toggle { display:flex; align-items:center; }
+
+/* Switch */
+.switch {
+  --h: 44px;
+  --w: 180px;
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  
-  &.btn-primary {
-    background: linear-gradient(145deg, var(--primary) 0%, hsl(145, 63%, 40%) 100%);
-    color: var(--primary-foreground);
-  }
-  
-  &.btn-secondary {
-    background: rgba(255, 255, 255, 0.8);
-    color: hsl(210, 15%, 40%);
-    
-    &:hover {
-      background: white;
-      color: hsl(210, 20%, 25%);
-    }
-  }
+
+  /* glass track */
+  background: rgba(255,255,255,.24);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.58);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.12),
+    0 8px 22px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.78);
 }
 
-.btn-3d {
-  box-shadow: 
-    0 4px 12px -2px var(--shadow-medium),
-    inset 0 1px 0 hsl(145, 70%, 55%),
-    inset 0 -1px 0 hsl(145, 60%, 35%);
-  
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 
-      0 6px 16px -2px var(--shadow-medium),
-      inset 0 1px 0 hsl(145, 70%, 60%),
-      inset 0 -1px 0 hsl(145, 60%, 30%);
-  }
-  
-  &:active {
-    transform: translateY(0);
-    box-shadow: 
-      0 2px 8px -2px var(--shadow-medium),
-      inset 0 1px 0 hsl(145, 70%, 50%),
-      inset 0 -1px 0 hsl(145, 60%, 40%);
-  }
+/* Track labels */
+.switch .track {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 16px; pointer-events:none;
+  font-weight: 700; font-size: 14px;
+  color: rgba(14,43,36,.85);
 }
 
-.btn-icon {
-  font-size: 1rem;
-  font-weight: bold;
+/* Knob */
+.switch .knob {
+  --knob: calc(var(--h) - 8px);
+  position:absolute; top: 4px; left: 4px;
+  width: var(--knob); height: var(--knob);
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff, #eaf6f1);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.18),
+    0 6px 12px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  transition: transform .22s cubic-bezier(.4,0,.2,1);
 }
 
-// Table styles
-.table-container {
-  overflow-x: auto;
-  margin: 0 -1rem;
-  
-  @media (min-width: 768px) {
-    margin: 0;
-  }
+/* Checked = Mint (knob slides right) */
+#themeToggle:checked + .switch .knob {
+  transform: translateX(calc(var(--w) - var(--h)));
 }
 
-.table-wrapper {
-  min-width: 100%;
-  padding: 0 1rem;
-  
-  @media (min-width: 768px) {
-    padding: 0;
-  }
+/* Focus ring */
+#themeToggle:focus + .switch {
+  box-shadow:
+    0 0 0 4px rgba(51,192,165,.20),
+    0 24px 60px rgba(0,0,0,.12),
+    0 8px 22px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.78);
 }
 
-.employee-table {
-  width: 100%;
-  min-width: 600px;
-  border-collapse: collapse;
-  
-  th {
-    text-align: left;
-    color: hsl(210, 15%, 40%);
-    font-size: 0.875rem;
-    font-weight: 600;
-    padding: 1rem 0.75rem;
-    border-bottom: 1px solid hsl(145, 25%, 85%);
-    min-width: fit-content;
-    
-    &:first-child { min-width: 40px; }
-    &:nth-child(2) { min-width: 120px; }
-    &:nth-child(3) { min-width: 100px; }
-    &:nth-child(4) { min-width: 140px; }
-    &:nth-child(5) { min-width: 100px; }
-    &:nth-child(6) { min-width: 80px; }
-  }
-  
-  td {
-    padding: 1rem 0.75rem;
-    font-size: 0.875rem;
-    border-bottom: 1px solid hsl(145, 15%, 92%);
-    transition: background-color 0.2s ease;
-  }
-  
-  tr {
-    &.even {
-      background: rgba(255, 255, 255, 0.5);
-    }
-    
-    &.odd {
-      background: rgba(145, 255, 145, 0.05);
-    }
-    
-    &:hover {
-      background: rgba(145, 255, 145, 0.1) !important;
-    }
-  }
+/* Optional: tiny color hint under knob when on Mint */
+#themeToggle:checked + .switch .knob {
+  background: linear-gradient(180deg, #ffffff, #d8f3ec);
 }
 
-.employee-id,
-.employee-name {
-  font-weight: 600;
-  color: hsl(210, 20%, 15%);
+/* a11y helper (if not already present) */
+.sr-only {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }
 
-.employee-name {
-  color: hsl(210, 25%, 10%);
-}
-
-.employee-department,
-.employee-email,
-.employee-hire-date {
-  color: hsl(210, 15%, 40%);
-}
-
-.employee-salary {
-  color: var(--primary);
-  font-weight: 600;
-}
-
-// Candidates section
-.candidates-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.candidate-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.candidate-item {
-  display: flex;
+/* Put actions (toggle + avatar) at the very right */
+.row.header {
+  display: grid;
+  grid-template-columns: 1fr auto; /* title | actions */
   align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  background: rgba(255, 255, 255, 0.5);
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.8);
-  }
+  gap: 16px;
 }
-
-.candidate-name {
-  color: hsl(210, 25%, 15%);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.badge {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
-  color: white;
-  text-transform: capitalize;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  
-  &.status-applied {
-    background: hsl(210, 15%, 45%);
-    
-    &:hover {
-      background: hsl(210, 15%, 35%);
-    }
-  }
-  
-  &.status-interview {
-    background: hsl(217, 91%, 60%);
-    
-    &:hover {
-      background: hsl(217, 91%, 50%);
-    }
-  }
-  
-  &.status-hired {
-    background: var(--primary);
-    
-    &:hover {
-      background: hsl(145, 63%, 35%);
-    }
-  }
-  
-  &.status-rejected {
-    background: var(--destructive);
-    
-    &:hover {
-      background: hsl(0, 72%, 41%);
-    }
-  }
-}
-
-// Selected candidates
-.selected-candidates {
-  border-top: 1px solid hsl(145, 25%, 85%);
-  padding-top: 1rem;
-}
-
-.selected-header {
-  display: flex;
+.header-actions {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 12px;
 }
 
-.selected-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  background: hsl(145, 40%, 90%);
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
+/* Hide the old theme card if it's still in your CSS/HTML */
+.theme-card { display: none !important; }
+
+/* KPIs span full width now */
+.grid.top { grid-template-columns: 1fr !important; }
+
+/* ===== Small glass toggle sizing ===== */
+.switch.sm {
+  --h: 28px;       /* height */
+  --w: 108px;      /* width */
+}
+.switch.sm .track { font-size: 12px; padding: 0 10px; }
+.switch.sm .knob  { box-shadow:
+  0 8px 18px rgba(0,0,0,.18),
+  0 4px 10px rgba(0,0,0,.10),
+  inset 0 1px 0 rgba(255,255,255,.9);
 }
 
-.selected-label {
-  color: hsl(210, 15%, 40%);
-  font-size: 0.875rem;
-  font-weight: 500;
+/* (keep the original .switch styles you already have —
+   these rules just shrink the component) */
+
+
+   /* a11y helper (if not present) */
+.sr-only {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }
 
-.selection-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+/* Make space for the floating toggle */
+.frame.has-theme-toggle { padding-top: 64px; }
 
-.selection-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background: rgba(145, 255, 145, 0.1);
-  }
-}
-
-.selection-name {
-  color: hsl(210, 25%, 15%);
-  font-size: 0.875rem;
-}
-
-.checkbox {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid hsl(145, 40%, 80%);
-  border-radius: 0.375rem;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  
-  &:hover {
-    border-color: hsl(145, 50%, 70%);
-  }
-  
-  &.checked {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-  }
-}
-
-.checkmark {
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-// Modal styles
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  width: 100%;
-  max-width: 28rem;
-  border: 1px solid hsl(145, 30%, 90%);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.modal-header {
-  margin-bottom: 1.5rem;
-}
-
-.modal-title {
-  color: hsl(210, 25%, 15%);
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-label {
-  color: hsl(210, 15%, 40%);
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.form-input,
-.form-select {
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  background: var(--surface-primary);
-  color: var(--foreground);
-  transition: all 0.2s ease;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px hsla(145, 63%, 45%, 0.1);
-  }
-  
-  &::placeholder {
-    color: var(--muted-foreground);
-  }
-}
-
-.input-3d {
-  box-shadow: 
-    inset 0 2px 4px -1px var(--shadow-light),
-    0 1px 0 var(--surface-primary);
-  
-  &:focus {
-    box-shadow: 
-      inset 0 2px 4px -1px var(--shadow-light),
-      0 0 0 3px hsla(145, 63%, 45%, 0.1),
-      0 1px 0 var(--surface-primary);
-  }
-}
-
-.input-with-icon {
-  position: relative;
-}
-
-.input-icon {
+/* Floating, top-right under navbar */
+.theme-toggle-floating{
   position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-  pointer-events: none;
-}
-
-.modal-actions {
+  top: 12px;              /* distance from top of the frame */
+  right: 16px;            /* distance from right edge */
+  z-index: 10;
   display: flex;
-  gap: 0.75rem;
-  padding-top: 1.5rem;
-  
-  .btn {
-    flex: 1;
-  }
+  align-items: center;
+  gap: 8px;
 }
 
-// Responsive design
-@media (max-width: 640px) {
-  .navigation {
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-  }
-  
-  .nav-button {
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .card-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
+/* Small size for the switch (reuses your existing .switch rules) */
+.switch.sm { --h: 26px; --w: 96px; }
+.switch.sm .track { font-size: 12px; padding: 0 10px; }
+.switch.sm .knob  {
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.18),
+    0 4px 10px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+/* Optional: tighter on mobile */
+@media (max-width: 640px){
+  .frame.has-theme-toggle { padding-top: 56px; }
+  .theme-toggle-floating { top: 8px; right: 12px; }
+  .switch.sm { --h: 24px; --w: 90px; }
+}
+/* ===== Upcoming card uses the same glass look as employees ===== */
+.upcoming-card{
+  margin-top: 18px;
+  padding-top: 20px;
+  border-radius: 18px;
+  /* reuse your glass mixin if present; otherwise explicit values: */
+  background: rgba(255,255,255,.26);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  border: 1px solid rgba(255,255,255,.60);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.16),
+    0 12px 28px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.78);
+  color:#0e2b24;
+}
+
+/* Compact grid for upcoming table */
+.table.compact .thead,
+.table.compact .tr{
+  grid-template-columns: 1.8fr 2.4fr 1.6fr 1.2fr 24px;
+}
+
+/* Glass status tags */
+.tag{
+  display:inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .2px;
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.58);
+  box-shadow:
+    0 16px 36px rgba(0,0,0,.10),
+    0 6px 16px rgba(0,0,0,.08),
+    inset 0 1px 0 rgba(255,255,255,.78);
+  color:#0e2b24;
+}
+
+/* Variants */
+.tag-scheduled{
+  background: linear-gradient(180deg, rgba(103,205,182,.85), rgba(60,183,156,.75));
+  color: #06231d;
+}
+.tag-pending{
+  background: linear-gradient(180deg, rgba(255,232,170,.85), rgba(255,201,90,.75));
+  color: #40260a;
+  border-color: rgba(255,255,255,.62);
+}
+.tag-canceled{
+  background: linear-gradient(180deg, rgba(255,176,176,.85), rgba(235,93,93,.75));
+  color: #3a0b0b;
+  border-color: rgba(255,255,255,.62);
+}
+
+/* ====== Layout for the colorful dashboard ====== */
+
+/* put space under navbar for the floating toggle */
+.frame.has-theme-toggle { padding-top: 64px; }
+
+.theme-toggle-floating{
+  position: absolute; top: 12px; right: 16px; z-index: 10;
+}
+.switch.sm { --h: 26px; --w: 96px; }
+.switch.sm .track { font-size: 12px; padding: 0 10px; }
+.switch.sm .knob  {
+  box-shadow: 0 8px 18px rgba(0,0,0,.18), 0 4px 10px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+/* confetti background sprinkles */
+.confetti{
+  position:absolute; inset:0; pointer-events:none; border-radius:22px;
+  background:
+    radial-gradient(6px 6px at 12% 14%, #ffd166 40%, transparent 41%),
+    radial-gradient(6px 6px at 30% 10%, #70e1d5 40%, transparent 41%),
+    radial-gradient(6px 6px at 42% 18%, #a78bfa 40%, transparent 41%),
+    radial-gradient(6px 6px at 62% 12%, #fca5a5 40%, transparent 41%),
+    radial-gradient(6px 6px at 78% 16%, #60a5fa 40%, transparent 41%),
+    radial-gradient(6px 6px at 91% 8%,  #f59e0b 40%, transparent 41%);
+  opacity:.35;
+}
+
+/* Shared glass helpers */
+.glassy{
+  background: rgba(255,255,255,.26);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  border: 1px solid rgba(255,255,255,.60);
+  box-shadow: 0 24px 60px rgba(0,0,0,.12), 0 8px 22px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.78);
+  border-radius: 18px;
+}
+.glassy-lite{
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow: 0 18px 42px rgba(0,0,0,.10), 0 8px 20px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.76);
+  border-radius: 16px;
+}
+
+/* Top hero layout: welcome + 4 kpis */
+.hero-wrap{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+@media (max-width: 1200px){
+  .hero-wrap{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px){
+  .hero-wrap{ grid-template-columns: 1fr; }
+}
+
+/* Welcome card */
+.welcome-card{
+  grid-column: span 1;
+  display:flex; align-items:center; gap:14px; padding:18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.25)),
+    linear-gradient(135deg, #ffe9f0, #fff8e6);
+}
+.avatar-pill{
+  width:64px; height:64px; border-radius:16px; display:grid; place-items:center;
+  background: linear-gradient(135deg, #ffd1a4, #ffb680);
+  color:#2a2a2a; font-size:28px; font-weight:700;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+}
+.welcome-title{ margin:0; line-height:1.05; font-size:28px; font-weight:800; color:#0b2431; }
+.welcome-sub{ color:#334155; font-weight:600; margin-top:4px; }
+
+/* Stat / KPI cards */
+.stat-card{
+  padding:18px; display:flex; flex-direction:column; gap:10px; position:relative;
+  min-height: 120px;
+}
+.kpi-emp{ background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.2)), linear-gradient(135deg, #c9f7f0, #93f1df); }
+.kpi-dept{ background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.2)), linear-gradient(135deg, #e0f2ff, #c7e8ff); }
+.kpi-comp{ background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.2)), linear-gradient(135deg, #e0ecff, #cedbff); }
+.kpi-cand{ background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.2)), linear-gradient(135deg, #ffe2e2, #ffd1d1); }
+
+.stat-num{ font-size:42px; font-weight:800; color:#0b2431; line-height:1; }
+.stat-label{ font-weight:700; color:#1f3b4a; }
+.chip{
+  position:absolute; left:18px; bottom:16px; font-weight:800; font-size:12px;
+  padding:8px 12px; border-radius:999px; display:inline-flex; gap:6px; align-items:center;
+  color:#063c31; border:1px solid rgba(255,255,255,.6);
+  background: rgba(255,255,255,.6); backdrop-filter: blur(10px);
+}
+.chip .icon{ font-size:12px; }
+.chip-up{ background: linear-gradient(180deg, rgba(103,205,182,.88), rgba(60,183,156,.78)); color:#06231d; }
+.chip-down{ background: linear-gradient(180deg, rgba(255,176,176,.88), rgba(235,93,93,.78)); color:#3a0b0b; }
+
+.mini-line{ width: 56%; height: 10px; border-radius:999px; background: rgba(10,40,60,.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); margin-top:auto; }
+
+/* Split panels row */
+.split-panels{
+  display:grid; grid-template-columns: 1.35fr 1fr; gap:18px;
+}
+@media (max-width: 1100px){
+  .split-panels{ grid-template-columns: 1fr; }
+}
+
+/* Panels */
+.panel{ padding:18px; }
+.panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.panel-title{ margin:0; font-size:22px; font-weight:800; color:#0b2431; }
+.panel-title.sm{ font-size:18px; }
+.icon-btn{ background: transparent; border: none; color:#5b7381; cursor:pointer; }
+
+/* Sub-cards inside the right panel */
+.sub-card{ padding:14px; margin-top:12px; }
+.sub-grid{ display:grid; grid-template-columns: 1fr 1fr; color:#5b7381; font-weight:700; margin-bottom:6px; }
+
+/* Table tweaks */
+.table.compact .thead, .table.compact .tr{
+  grid-template-columns: 2fr 1fr 24px;
+}
+.tr.compact-row{ display:grid; grid-template-columns: 1fr auto; align-items:center; padding:12px 0 2px; border-top:1px solid rgba(0,0,0,.06); }
+.tr .actions{ display:flex; gap:8px; }
+
+/* Badges (left table) */
+.badge{
+  display:inline-block; padding:6px 12px; border-radius:999px; font-weight:800; font-size:12px; letter-spacing:.2px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.85);
+  border:1px solid rgba(255,255,255,.65);
+}
+.badge-applied  { background: linear-gradient(180deg, #dff7ff, #c8f1ff); color:#0b2c3a; }
+.badge-interview{ background: linear-gradient(180deg, #ffe8b3, #ffd479); color:#3b2605; }
+.badge-hired    { background: linear-gradient(180deg, #c8f7e7, #aef0dd); color:#063024; }
+.badge-rejected { background: linear-gradient(180deg, #ffc9c9, #ffb2b2); color:#3b0f0f; }
+
+/* Buttons */
+.btn{
+  border:none; border-radius:999px; padding:8px 14px; font-weight:800; cursor:pointer;
+  color:#06231d; box-shadow: 0 10px 22px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.85);
+}
+.btn.mint{ background: linear-gradient(180deg, #8ef1de, #6de7cf); }
+.btn.sky { background: linear-gradient(180deg, #bfe0ff, #9bc9ff); }
+.btn.wide{ width: 140px; }
+
+/* Floating action buttons */
+.fab.plus{
+  position: fixed; left: 28px; top: calc(64px + 120px);
+  width: 56px; height: 56px; border-radius:18px; font-size:30px; line-height:56px; text-align:center;
+  background: linear-gradient(180deg, #e8eaff, #d8dcff); color:#2a2a2a; border:1px solid rgba(255,255,255,.65);
+  box-shadow: 0 26px 60px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.88);
+}
+.fab.hire{
+  position: fixed; right: 26px; top: calc(64px + 120px); display:flex; flex-direction:column; align-items:center; gap:10px;
+}
+.fab.hire .bubble{
+  width: 56px; height:56px; border-radius:18px; display:grid; place-items:center; font-size:24px;
+  background: linear-gradient(180deg, #ffd0a6, #ffb681); border:1px solid rgba(255,255,255,.7);
+  box-shadow: 0 26px 60px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.88);
+}
+.hire-btn{ background: linear-gradient(180deg, #ffdeba, #ffc88b); }
+
+/* Misc */
+.muted{ color:#5b7381; font-weight:700; }
+.strong{ font-weight:800; }
+.ghost{ width:24px; height:1px; }
+
+/* Accessibility helper */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }

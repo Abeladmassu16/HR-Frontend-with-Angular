@@ -7,12 +7,13 @@ import { CandidatesComponent } from './features/candidates/candidates.component'
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  
   { path: 'dashboard',  component: DashboardComponent },
   { path: 'departments', component: DepartmentsComponent },
   { path: 'employees',   component: EmployeesComponent },
   { path: 'companies',   component: CompaniesComponent },
   { path: 'candidates',  component: CandidatesComponent },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'departments' }
 ];
 

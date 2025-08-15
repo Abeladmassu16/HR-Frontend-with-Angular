@@ -1,135 +1,158 @@
-<!-- HR Frontend Dashboard Component -->
-<div class="hr-dashboard">
-  <!-- Header -->
-  
+<!-- Dashboard Canvas -->
+<div class="canvas">
+  <div class="frame has-theme-toggle">
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <div class="content-grid">
+    <!-- Small theme toggle pinned under navbar (top-right) -->
+    <div class="theme-toggle-floating">
+      <input
+        id="themeToggle"
+        class="sr-only"
+        type="checkbox"
+        [checked]="theme === 'mint'"
+        (change)="onToggleChange($event)"
+        aria-label="Toggle theme between Mint and White" />
+      <label for="themeToggle" class="switch sm" role="switch" [attr.aria-checked]="theme === 'mint'">
+        <span class="track">
+          <span class="label left">White</span>
+          <span class="label right">Mint</span>
+        </span>
+        <span class="knob"></span>
+      </label>
+    </div>
 
-      <!-- Employees Section -->
-      <section class="employees-section">
-        <div class="card glass-card card-3d">
-          <div class="card-header">
-            <h2 class="section-title">Employees</h2>
+    <!-- Page Title -->
+    <div class="row header">
+      <h1 class="title">HR Frontend</h1>
+    </div>
+
+    <!-- 🎉 confetti backdrop just for fun -->
+    <div class="confetti"></div>
+
+    <!-- ===== Top Row: Welcome + 4 KPI tiles ===== -->
+    <div class="hero-wrap">
+      <!-- Welcome card -->
+      <div class="welcome-card glassy">
+        <div class="avatar-pill">
+          <span class="emoji">👩‍💼</span>
+        </div>
+        <div class="welcome-copy">
+          <h2 class="welcome-title">Welcome<br>back</h2>
+          <div class="welcome-sub">Here’s what’s happening today</div>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="stat-card glassy kpi kpi-emp">
+        <div class="stat-num">{{ stats.employees.count }}</div>
+        <div class="stat-label">Employees</div>
+        <div class="chip chip-up" *ngIf="stats.employees.delta >= 0">
+          <span class="icon">⬆</span>{{ stats.employees.delta }}%
+        </div>
+        <div class="chip chip-down" *ngIf="stats.employees.delta < 0">
+          <span class="icon">⬇</span>{{ stats.employees.delta | number:'1.0-0' }}%
+        </div>
+      </div>
+
+      <div class="stat-card glassy kpi kpi-dept">
+        <div class="stat-num">{{ stats.departments.count }}</div>
+        <div class="stat-label">Departments</div>
+        <div class="mini-line"></div>
+      </div>
+
+      <div class="stat-card glassy kpi kpi-comp">
+        <div class="stat-num">{{ stats.companies.count }}</div>
+        <div class="stat-label">Companies</div>
+        <div class="chip chip-up" *ngIf="stats.companies.delta >= 0">
+          <span class="icon">⬆</span>{{ stats.companies.delta }}%
+        </div>
+        <div class="chip chip-down" *ngIf="stats.companies.delta < 0">
+          <span class="icon">⬇</span>{{ stats.companies.delta | number:'1.0-0' }}%
+        </div>
+      </div>
+
+      <div class="stat-card glassy kpi kpi-cand">
+        <div class="stat-num">{{ stats.candidates.count }}</div>
+        <div class="stat-label">Candidates</div>
+        <div class="chip chip-up" *ngIf="stats.candidates.delta >= 0">
+          <span class="icon">⬆</span>{{ stats.candidates.delta }}%
+        </div>
+        <div class="chip chip-down" *ngIf="stats.candidates.delta < 0">
+          <span class="icon">⬇</span>{{ stats.candidates.delta | number:'1.0-0' }}%
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Second Row: Recent Candidates (left) + Upcoming Interviews (right) ===== -->
+    <div class="split-panels">
+      <!-- Recent Candidates -->
+      <section class="panel glassy">
+        <div class="panel-head">
+          <h3 class="panel-title">Recent Candidates</h3>
+        </div>
+
+        <div class="table compact">
+          <div class="thead">
+            <div>Candidate</div>
+            <div>Status</div>
+            <div class="ghost"></div>
           </div>
 
-          <!-- Employee Table -->
-          <div class="table-container">
-            <div class="table-wrapper">
-              <table class="employee-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Email</th>
-                    <th>Hire Date</th>
-                    <th>Salary</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let employee of employees; let i = index"
-                      [class.even]="i % 2 === 0"
-                      [class.odd]="i % 2 !== 0">
-                    <td class="employee-id">{{ employee.id }}</td>
-                    <td class="employee-name">{{ employee.name }}</td>
-                    <td class="employee-department">{{ employee.department }}</td>
-                    <td class="employee-email">{{ employee.email }}</td>
-                    <td class="employee-hire-date">{{ employee.hireDate }}</td>
-                    <td class="employee-salary">{{ employee.salary | number }}</td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="tr" *ngFor="let c of recentCandidates; let i = index" [class.alt]="i % 2 === 1">
+            <div class="strong">{{ c.name }}</div>
+            <div>
+              <span class="badge"
+                    [ngClass]="{
+                      'badge-applied':  c.status === 'Applied',
+                      'badge-interview':c.status === 'Interview',
+                      'badge-hired':    c.status === 'Hired',
+                      'badge-rejected': c.status === 'Rejected'
+                    }">
+                {{ c.status }}
+              </span>
             </div>
+            <div class="ghost"></div>
           </div>
         </div>
       </section>
 
-      <!-- Candidates Section -->
-      <aside class="candidates-section">
-        <div class="card glass-card card-3d">
-          <h2 class="section-title">Candidates</h2>
+      <!-- Upcoming Interviews -->
+      <aside class="panel glassy">
+        <div class="panel-head">
+          <h3 class="panel-title">Upcoming Interviews</h3>
+          <button class="icon-btn" aria-label="menu"><span class="material-icons">menu</span></button>
+        </div>
 
-          <!-- Candidate List -->
-          <div class="candidate-list">
-            <div *ngFor="let candidate of candidates" class="candidate-item">
-              <span class="candidate-name">{{ candidate.name }}</span>
-              <span class="badge" [ngClass]="getStatusClass(candidate.status)">
-                {{ candidate.status }}
-              </span>
-            </div>
+        <!-- Row 1 -->
+        <div class="sub-card glassy-lite">
+          <div class="sub-grid">
+            <div class="muted">Marketing</div>
+            <div class="muted">Interviews</div>
           </div>
 
-          <!-- Selected Candidates -->
-          <div class="selected-candidates">
-            <div class="selected-header">
-              <div class="selected-icon">👥</div>
-              <span class="selected-label">candidates</span>
-            </div>
-
-            <div class="selection-list">
-              <div *ngFor="let candidate of selectedCandidatesList" class="selection-item">
-                <span class="selection-name">{{ candidate.name }}</span>
-                <button
-                  class="checkbox"
-                  [class.checked]="candidate.selected"
-                  (click)="toggleCandidateSelection(candidate.name)">
-                  <span *ngIf="candidate.selected" class="checkmark">✓</span>
-                </button>
-              </div>
+          <div class="tr compact-row" *ngFor="let u of upcoming | slice:0:2">
+            <div class="strong">{{ u.when | date:'MMMM d, y' }}</div>
+            <div class="actions">
+              <button class="btn mint" (click)="schedule(u)">Schedule</button>
+              <button class="btn sky"  (click)="email(u)">Email</button>
             </div>
           </div>
+        </div>
+
+        <!-- Footer CTA -->
+        <div class="sub-card glassy-lite">
+          <div class="panel-title sm">Upcoming Interviews</div>
+          <button class="btn mint wide" (click)="openSchedule()">Schedule</button>
         </div>
       </aside>
     </div>
-  </main>
 
-  <!-- Add Employee Modal -->
-  <div class="modal-overlay" *ngIf="isAddModalOpen" (click)="closeAddModal()">
-    <div class="modal glass-card" (click)="$event.stopPropagation()">
-      <header class="modal-header">
-        <h3 class="modal-title">Add Employee</h3>
-      </header>
+    <!-- Floating Action Buttons -->
+    <button class="fab plus" (click)="addNew()" aria-label="Add">+</button>
 
-      <form class="modal-form" (ngSubmit)="addEmployee()">
-        <div class="form-group">
-          <label class="form-label">Name</label>
-          <input type="text" class="form-input input-3d" placeholder="Enter name"
-                 [(ngModel)]="newEmployee.name" name="name">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Department</label>
-          <!-- dynamic options from your real Departments -->
-          <select class="form-select input-3d"
-                  [(ngModel)]="newEmployee.departmentId"
-                  name="departmentId">
-            <option [ngValue]="null">---</option>
-            <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Hire Date</label>
-          <div class="input-with-icon">
-            <input type="date" class="form-input input-3d"
-                   [(ngModel)]="newEmployee.hireDate" name="hireDate">
-            <span class="input-icon">📅</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Salary</label>
-          <input type="number" class="form-input input-3d" placeholder="$"
-                 [(ngModel)]="newEmployee.salary" name="salary">
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-3d">Add</button>
-        </div>
-      </form>
+    <div class="fab hire">
+      <div class="bubble">👤</div>
+      <button class="btn hire-btn" (click)="openHire()">Hire</button>
     </div>
+
   </div>
 </div>

@@ -11,6 +11,7 @@ import { MaterialModule } from './material.module';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { InMemoryDataService } from './in-memory-data.service';
 
+
 // Features
 import { DepartmentsComponent } from './features/departments/departments.component';
 import { EmployeesComponent } from './features/employees/employees.component';
@@ -26,8 +27,8 @@ import { ElevateOnHoverDirective } from './directives/elevate-on-hover.directive
 import { TiltCardDirective } from './directives/tilt-card.directive';
 
 @NgModule({
-  providers: [
-  { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } }
+    providers: [
+    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } }
 ],
   declarations: [
     AppComponent,

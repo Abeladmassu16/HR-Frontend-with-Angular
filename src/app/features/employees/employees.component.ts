@@ -1,14 +1,17 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Employee } from '../../models/employee';
-import { EmployeeService } from '../../../services/employee.service';
-import { DepartmentService } from '../../../services/department.service';
-import { Department } from '../../models/department';
-import { EmployeeDialogComponent } from './employee-dialog.component';
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+export interface Employee {
+  id: number;
+  name: string;
+  email?: string;
+  hireDate?: string | Date;
+  role?: string;
+}
+
+const API = '/api/employees';
 
 @Component({
   selector: 'app-employees',
@@ -16,31 +19,49 @@ import { EmployeeDialogComponent } from './employee-dialog.component';
   styleUrls: ['./employees.component.scss']
 })
 export class EmployeesComponent implements OnInit {
-  displayedColumns = ['id','name','department','email','hireDate','salary','actions'];
-  data = new MatTableDataSource<Employee>([]);
-  departments: Department[] = [];
+  employees: Employee[] = [];
+  employeesView: Employee[] = [];   // filtered view if you use a search box
+  employeeFilter = '';
+  loading = false;
+  error = '';
 
-  @ViewChild(MatPaginator,{static:true}) paginator: MatPaginator;
-  @ViewChild(MatSort,{static:true}) sort: MatSort;
+  constructor(private http: HttpClient) {}
 
-  constructor(
-    private employees: EmployeeService,
-    private depts: DepartmentService,
-    private dialog: MatDialog,
-    private sb: MatSnackBar
-  ) {}
+  ngOnInit() { this.refresh(); }
 
-  ngOnInit() {
-    this.data.paginator = this.paginator; this.data.sort = this.sort;
-    this.depts.getAll().subscribe(d => this.departments = d);
-    this.load();
+  refresh() {
+    this.loading = true; this.error = '';
+    this.http.get<Employee[]>(API).pipe(
+      catchError(err => { this.error = 'Failed to load employees'; console.error(err); return of([]); })
+    ).subscribe(list => {
+      this.employees = Array.isArray(list) ? list : [];
+      this.applyFilter();
+      this.loading = false;
+    }, _ => { this.loading = false; });
   }
-  load() { this.employees.getAll().subscribe(e => this.data.data = e); }
-  deptName(id: number) { const d = this.departments.find(x => x.id === id); return d ? d.name : '-'; }
-  openCreate() { this.dialog.open(EmployeeDialogComponent,{width:'520px',data:{mode:'create'}})
-    .afterClosed().subscribe(ok => { if(ok){ this.sb.open('Employee created','OK',{duration:1500}); this.load(); } }); }
-  openEdit(row: Employee) { this.dialog.open(EmployeeDialogComponent,{width:'520px',data:{mode:'edit', employee: row}})
-    .afterClosed().subscribe(ok => { if(ok){ this.sb.open('Employee updated','OK',{duration:1500}); this.load(); } }); }
-  delete(id: number) { this.employees.delete(id).subscribe(() => { this.sb.open('Employee deleted','OK',{duration:1500}); this.load(); }); }
-  applyFilter(v: string) { this.data.filter = v.trim().toLowerCase(); }
+
+  applyFilter() {
+    const q = (this.employeeFilter || '').toLowerCase();
+    if (!q) { this.employeesView = this.employees.slice(); return; }
+    this.employeesView = this.employees.filter(e =>
+      (e.name || '').toLowerCase().includes(q) ||
+      (e.email || '').toLowerCase().includes(q) ||
+      (e.role || '').toLowerCase().includes(q)
+    );
+  }
+
+  addEmployee()  { /* open dialog / navigate */ console.log('addEmployee'); }
+  editEmployee(e: Employee) { console.log('editEmployee', e); }
+
+  deleteEmployee(e: Employee) {
+    if (!e || e.id == null) return;
+    this.http.delete(`${API}/${e.id}`).pipe(
+      catchError(err => { this.error = 'Failed to delete employee'; console.error(err); return of(null); })
+    ).subscribe(() => {
+      this.employees = this.employees.filter(x => x.id !== e.id);
+      this.applyFilter();
+    });
+  }
+
+  trackById(_: number, row: { id: number }) { return row.id; }
 }
