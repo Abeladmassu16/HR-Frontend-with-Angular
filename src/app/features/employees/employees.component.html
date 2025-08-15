@@ -1,39 +1,25 @@
 <div class="canvas">
   <div class="frame">
-    <!-- Title -->
     <div class="page-head">
       <h1 class="title">Employees</h1>
     </div>
 
-    <!-- Error -->
-    <div *ngIf="error" class="panel glassy error-banner">
-      {{ error }}
-    </div>
+    <div *ngIf="error" class="panel glassy error-banner">{{ error }}</div>
 
-    <!-- Toolbar -->
     <div class="toolbar glassy">
       <div class="input-wrap">
         <span class="icon">🔎</span>
-        <input
-          class="field"
-          type="text"
-          placeholder="Search employees"
-          [(ngModel)]="employeeFilter"
-          (input)="applyFilter()" />
+        <input class="field" type="text" placeholder="Search employees"
+               [(ngModel)]="employeeFilter" (input)="applyFilter()" />
       </div>
 
       <button class="btn mint" type="button" (click)="openAdd()">
-        <span class="plus">+</span>
-        Add
+        <span class="plus">+</span> Add
       </button>
     </div>
 
-    <!-- Loading -->
-    <section class="panel glassy" *ngIf="loading">
-      Loading employees…
-    </section>
+    <section class="panel glassy" *ngIf="loading">Loading employees…</section>
 
-    <!-- Table -->
     <section class="panel glassy" *ngIf="!loading">
       <div class="table emp">
         <div class="thead">
@@ -46,18 +32,14 @@
           <div class="ghost"></div>
         </div>
 
-        <div
-          class="tr"
-          *ngFor="let e of employeesView; let i = index; trackBy: trackById"
-          [class.alt]="i % 2 === 1">
+        <div class="tr" *ngFor="let e of employeesView; let i = index; trackBy: trackById" [class.alt]="i % 2 === 1">
           <div class="td mono muted">{{ e.id }}</div>
           <div class="td strong">{{ e.name || '—' }}</div>
           <div class="td">{{ e.email || '—' }}</div>
           <div class="td mono muted">{{ e.hireDate ? (e.hireDate | date:'MM/dd/yyyy') : '—' }}</div>
           <div class="td">{{ e.role || '—' }}</div>
-
           <div class="td right">
-            <button class="icon-pill primary" type="button" title="Edit" (click)="editEmployee(e)">✏️</button>
+            <button class="icon-pill primary" type="button" title="Edit" (click)="openEdit(e)">✏️</button>
             <button class="icon-pill danger" type="button" title="Delete" (click)="deleteEmployee(e)">🗑️</button>
           </div>
           <div class="ghost"></div>
@@ -69,39 +51,81 @@
       </div>
     </section>
 
-    <!-- Add Modal -->
-    <div class="modal-backdrop" *ngIf="addOpen" (click)="closeAdd()"></div>
-    <div class="modal glassy" *ngIf="addOpen" (click)="$event.stopPropagation()">
-      <div class="modal-head">
-        <h3 class="title" style="font-size:18px;">Add Employee</h3>
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
+
+    <!-- Glassy Modal -->
+    <div class="modal glassy" *ngIf="modalOpen" (click)="$event.stopPropagation()">
+      <!-- inner card is slightly narrower to create inset -->
+      <div class="modal-inner">
+        <div class="modal-head">
+          <h3 class="title">{{ modalMode === 'add' ? 'Add Employee' : 'Edit Employee' }}</h3>
+        </div>
+
+        <form (ngSubmit)="saveForm()" #formRef="ngForm" class="modal-body">
+  <!-- NAME -->
+  <div class="form-row">
+    <label>Name</label>
+    <!-- keep #nameInput so the TS can focus it on open -->
+    <input
+      #nameInput
+      class="field"
+      type="text"
+      name="name"
+      required
+      [(ngModel)]="formEmp.name"
+      #nameCtrl="ngModel"
+      [class.invalid]="(nameCtrl.invalid && (nameCtrl.dirty || nameCtrl.touched)) || (formRef.submitted && nameCtrl.invalid)" />
+
+    <small class="error"
+           *ngIf="(nameCtrl.invalid && (nameCtrl.dirty || nameCtrl.touched)) || (formRef.submitted && nameCtrl.invalid)">
+      Name is required.
+    </small>
+  </div>
+
+  <!-- EMAIL (with live validity + message) -->
+  <div class="form-row">
+  <label>Email</label>
+  <input
+    class="field"
+    type="email"
+    name="email"
+    [(ngModel)]="formEmp.email"
+    #emailCtrl="ngModel"
+    [pattern]="emailRegex"
+    [class.invalid]="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)" />
+
+  <!-- shows as soon as user touches/edits and the value is invalid -->
+  <small class="error"
+         *ngIf="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)">
+    Invalid input: please enter a valid email (e.g. user@example.com).
+  </small>
+</div>
+
+  <!-- HIRE DATE -->
+  <div class="form-row">
+    <label>Hire Date</label>
+    <input class="field" type="date" name="hireDate" [(ngModel)]="formEmp.hireDate" />
+  </div>
+
+  <!-- ROLE -->
+  <div class="form-row">
+    <label>Role</label>
+    <input class="field" type="text" name="role" [(ngModel)]="formEmp.role" />
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="modal-actions">
+    <button type="button" class="btn icon-pill" (click)="closeModal()">Cancel</button>
+    <button type="submit" class="btn mint"
+            [disabled]="modalSaving || nameCtrl.invalid || emailCtrl.invalid">
+      {{ modalMode === 'add' ? 'Create' : 'Save' }}
+    </button>
+  </div>
+</form>
+
       </div>
-
-      <form (ngSubmit)="saveNew()" #addForm="ngForm" class="modal-body">
-        <div class="form-row">
-          <label>Name</label>
-          <input #nameInput class="field" type="text" name="name" required [(ngModel)]="newEmp.name" />
-        </div>
-
-        <div class="form-row">
-          <label>Email</label>
-          <input class="field" type="email" name="email" [(ngModel)]="newEmp.email" />
-        </div>
-
-        <div class="form-row">
-          <label>Hire Date</label>
-          <input class="field" type="date" name="hireDate" [(ngModel)]="newEmp.hireDate" />
-        </div>
-
-        <div class="form-row">
-          <label>Role</label>
-          <input class="field" type="text" name="role" [(ngModel)]="newEmp.role" />
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn icon-pill" (click)="closeAdd()">Cancel</button>
-          <button type="submit" class="btn mint" [disabled]="addSaving || !addForm.form.valid">Create</button>
-        </div>
-      </form>
     </div>
+
   </div>
 </div>

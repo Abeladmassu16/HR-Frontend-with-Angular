@@ -22,7 +22,7 @@
 
     <!-- Page Title -->
     <div class="row header">
-      <h1 class="title">HR Frontend</h1>
+      <h1 class="title">Welcome back Here’s what’s happening today</h1>
     </div>
 
     <!-- 🎉 confetti backdrop just for fun -->
@@ -31,15 +31,7 @@
     <!-- ===== Top Row: Welcome + 4 KPI tiles ===== -->
     <div class="hero-wrap">
       <!-- Welcome card -->
-      <div class="welcome-card glassy">
-        <div class="avatar-pill">
-          <span class="emoji">👩‍💼</span>
-        </div>
-        <div class="welcome-copy">
-          <h2 class="welcome-title">Welcome<br>back</h2>
-          <div class="welcome-sub">Here’s what’s happening today</div>
-        </div>
-      </div>
+      
 
       <!-- KPI cards -->
       <div class="stat-card glassy kpi kpi-emp">
@@ -51,6 +43,7 @@
         <div class="chip chip-down" *ngIf="stats.employees.delta < 0">
           <span class="icon">⬇</span>{{ stats.employees.delta | number:'1.0-0' }}%
         </div>
+        <button class="fab plus" (click)="addNew()" aria-label="Add">+</button>
       </div>
 
       <div class="stat-card glassy kpi kpi-dept">
@@ -79,6 +72,9 @@
         <div class="chip chip-down" *ngIf="stats.candidates.delta < 0">
           <span class="icon">⬇</span>{{ stats.candidates.delta | number:'1.0-0' }}%
         </div>
+
+      <button class="btn hire-btn" (click)="openHire()">Hire</button>
+   
       </div>
     </div>
 
@@ -104,7 +100,7 @@
                     [ngClass]="{
                       'badge-applied':  c.status === 'Applied',
                       'badge-interview':c.status === 'Interview',
-                      'badge-hired':    c.status === 'Hired',
+                      'badge-hired':    c.status === 'Hired', 
                       'badge-rejected': c.status === 'Rejected'
                     }">
                 {{ c.status }}
@@ -147,12 +143,9 @@
     </div>
 
     <!-- Floating Action Buttons -->
-    <button class="fab plus" (click)="addNew()" aria-label="Add">+</button>
+    
 
-    <div class="fab hire">
-      <div class="bubble">👤</div>
-      <button class="btn hire-btn" (click)="openHire()">Hire</button>
-    </div>
+    
 
   </div>
 </div>
