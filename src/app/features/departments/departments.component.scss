@@ -1,1 +1,12 @@
 table { width: 100%; }
+
+.clickable-row { cursor: pointer; }
+.active-row { background: rgba(63,81,181,.06); }
+
+.sub-card { margin-top: 16px; }
+
+.empty-state {
+  padding: 16px;
+  color: #6b7280;
+  font-weight: 500;
+}

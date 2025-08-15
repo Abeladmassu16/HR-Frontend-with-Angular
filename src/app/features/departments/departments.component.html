@@ -1,20 +1,20 @@
 <mat-card class="glass-3d mat-elevation-z8" elevateOnHover tiltCard>
   <div class="section-head">
     <h2>Departments</h2>
-    <!-- no dialog here; we already add via input below -->
   </div>
 
   <div style="display:flex; gap:12px; margin-bottom:12px">
     <mat-form-field style="flex:1">
       <input matInput placeholder="New department name" [(ngModel)]="newName">
     </mat-form-field>
-    <button mat-raised-button color="primary" class="primary-pill" (click)="add()">
+    <button mat-raised-button class="primary-pill" (click)="add()">
       <mat-icon>add</mat-icon><span>Add</span>
     </button>
   </div>
 
   <div class="table-wrap mat-elevation-z2">
     <table mat-table [dataSource]="depts">
+
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef>ID</th>
         <td mat-cell *matCellDef="let d">{{ d.id }}</td>
@@ -28,14 +28,106 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let d">
-          <button mat-icon-button class="icon-btn delete" (click)="remove(d.id)">
+          <button mat-icon-button class="icon-btn delete"
+                  (click)="remove(d.id); $event.stopPropagation()">
             <mat-icon>delete</mat-icon>
           </button>
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="['id','name','actions']"></tr>
-      <tr mat-row *matRowDef="let row; columns: ['id','name','actions'];"></tr>
+      <tr mat-header-row *matHeaderRowDef="deptsDisplayed"></tr>
+      <!-- make the row clickable; highlight if selected -->
+      <tr mat-row
+          *matRowDef="let row; columns: deptsDisplayed;"
+          (click)="select(row)"
+          [class.active-row]="selectedDept && selectedDept.id === row.id"
+          class="clickable-row">
+      </tr>
     </table>
   </div>
+</mat-card>
+
+<!-- RELATED: Employees in selected department -->
+<mat-card *ngIf="selectedDept" class="glass-3d mat-elevation-z8 sub-card" elevateOnHover tiltCard>
+  <div class="section-head">
+    <h2>Employees — {{ selectedDept.name }}</h2>
+    <button mat-stroked-button (click)="clearSelection()">Clear</button>
+  </div>
+
+  <div class="table-wrap mat-elevation-z2" *ngIf="deptEmployees.length; else noEmployees">
+    <table mat-table [dataSource]="deptEmployees">
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let r">{{ r.id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let r">{{ r.firstName }} {{ r.lastName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let r">{{ r.email }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="hireDate">
+        <th mat-header-cell *matHeaderCellDef>Hire Date</th>
+        <td mat-cell *matCellDef="let r">{{ r.hireDate | date }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="salary">
+        <th mat-header-cell *matHeaderCellDef>Salary</th>
+        <td mat-cell *matCellDef="let r">{{ r.salary | number }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="empDisplayed"></tr>
+      <tr mat-row *matRowDef="let r; columns: empDisplayed;"></tr>
+    </table>
+  </div>
+  <ng-template #noEmployees>
+    <div class="empty-state">No employees in {{ selectedDept.name }} yet.</div>
+  </ng-template>
+</mat-card>
+
+<!-- RELATED: Candidates for selected department -->
+<mat-card *ngIf="selectedDept" class="glass-3d mat-elevation-z8 sub-card" elevateOnHover tiltCard>
+  <div class="section-head">
+    <h2>Candidates — {{ selectedDept.name }}</h2>
+  </div>
+
+  <div class="table-wrap mat-elevation-z2" *ngIf="deptCandidates.length; else noCandidates">
+    <table mat-table [dataSource]="deptCandidates">
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let r">{{ r.id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let r">{{ r.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let r">{{ r.status }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let r">{{ r.email }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef>Phone</th>
+        <td mat-cell *matCellDef="let r">{{ r.phone }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="candDisplayed"></tr>
+      <tr mat-row *matRowDef="let r; columns: candDisplayed;"></tr>
+    </table>
+  </div>
+  <ng-template #noCandidates>
+    <div class="empty-state">No candidates for {{ selectedDept.name }}.</div>
+  </ng-template>
 </mat-card>
