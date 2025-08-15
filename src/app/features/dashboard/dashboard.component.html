@@ -30,53 +30,101 @@
 
     <!-- ===== Top Row: Welcome + 4 KPI tiles ===== -->
     <div class="hero-wrap">
-      <!-- Welcome card -->
-      
+  <!-- Employees -->
+  <div
+    class="stat-card glassy kpi kpi-emp clickable"
+    role="button"
+    tabindex="0"
+    aria-label="Open Employees"
+    (click)="goTo('employees')"
+    (keydown.enter)="goTo('employees')"
+    (keydown.space)="goToSpace($event, 'employees')">
 
-      <!-- KPI cards -->
-      <div class="stat-card glassy kpi kpi-emp">
-        <div class="stat-num">{{ stats.employees.count }}</div>
-        <div class="stat-label">Employees</div>
-        <div class="chip chip-up" *ngIf="stats.employees.delta >= 0">
-          <span class="icon">⬆</span>{{ stats.employees.delta }}%
-        </div>
-        <div class="chip chip-down" *ngIf="stats.employees.delta < 0">
-          <span class="icon">⬇</span>{{ stats.employees.delta | number:'1.0-0' }}%
-        </div>
-        <button class="fab plus" (click)="addNew()" aria-label="Add">+</button>
-      </div>
+    <div class="stat-num">{{ stats.employees.count }}</div>
+    <div class="stat-label">Employees</div>
 
-      <div class="stat-card glassy kpi kpi-dept">
-        <div class="stat-num">{{ stats.departments.count }}</div>
-        <div class="stat-label">Departments</div>
-        <div class="mini-line"></div>
-      </div>
-
-      <div class="stat-card glassy kpi kpi-comp">
-        <div class="stat-num">{{ stats.companies.count }}</div>
-        <div class="stat-label">Companies</div>
-        <div class="chip chip-up" *ngIf="stats.companies.delta >= 0">
-          <span class="icon">⬆</span>{{ stats.companies.delta }}%
-        </div>
-        <div class="chip chip-down" *ngIf="stats.companies.delta < 0">
-          <span class="icon">⬇</span>{{ stats.companies.delta | number:'1.0-0' }}%
-        </div>
-      </div>
-
-      <div class="stat-card glassy kpi kpi-cand">
-        <div class="stat-num">{{ stats.candidates.count }}</div>
-        <div class="stat-label">Candidates</div>
-        <div class="chip chip-up" *ngIf="stats.candidates.delta >= 0">
-          <span class="icon">⬆</span>{{ stats.candidates.delta }}%
-        </div>
-        <div class="chip chip-down" *ngIf="stats.candidates.delta < 0">
-          <span class="icon">⬇</span>{{ stats.candidates.delta | number:'1.0-0' }}%
-        </div>
-
-      <button class="btn hire-btn" (click)="openHire()">Hire</button>
-   
-      </div>
+    <div class="chip chip-up" *ngIf="stats.employees.delta >= 0">
+      <span class="icon">⬆</span>{{ stats.employees.delta }}%
     </div>
+    <div class="chip chip-down" *ngIf="stats.employees.delta < 0">
+      <span class="icon">⬇</span>{{ stats.employees.delta | number:'1.0-0' }}%
+    </div>
+
+    <!-- Optional: Add button INSIDE the card -->
+    <button
+      type="button"
+      class="btn add-btn"
+      aria-label="Add employee"
+      (click)="$event.stopPropagation(); openAddEmployee()">+
+    </button>
+  </div>
+
+  <!-- Departments -->
+  <div
+    class="stat-card glassy kpi kpi-dept clickable"
+    role="button"
+    tabindex="0"
+    aria-label="Open Departments"
+    (click)="goTo('departments')"
+    (keydown.enter)="goTo('departments')"
+    (keydown.space)="goToSpace($event, 'departments')">
+
+    <div class="stat-num">{{ stats.departments.count }}</div>
+    <div class="stat-label">Departments</div>
+    <div class="mini-line"></div>
+  </div>
+
+  <!-- Companies -->
+  <div
+    class="stat-card glassy kpi kpi-comp clickable"
+    role="button"
+    tabindex="0"
+    aria-label="Open Companies"
+    (click)="goTo('companies')"
+    (keydown.enter)="goTo('companies')"
+    (keydown.space)="goToSpace($event, 'companies')">
+
+    <div class="stat-num">{{ stats.companies.count }}</div>
+    <div class="stat-label">Companies</div>
+
+    <div class="chip chip-up" *ngIf="stats.companies.delta >= 0">
+      <span class="icon">⬆</span>{{ stats.companies.delta }}%
+    </div>
+    <div class="chip chip-down" *ngIf="stats.companies.delta < 0">
+      <span class="icon">⬇</span>{{ stats.companies.delta | number:'1.0-0' }}%
+    </div>
+  </div>
+
+  <!-- Candidates -->
+  <div
+    class="stat-card glassy kpi kpi-cand clickable"
+    role="button"
+    tabindex="0"
+    aria-label="Open Candidates"
+    (click)="goTo('candidates')"
+    (keydown.enter)="goTo('candidates')"
+    (keydown.space)="goToSpace($event, 'candidates')">
+
+    <div class="stat-num">{{ stats.candidates.count }}</div>
+    <div class="stat-label">Candidates</div>
+
+    <div class="chip chip-up" *ngIf="stats.candidates.delta >= 0">
+      <span class="icon">⬆</span>{{ stats.candidates.delta }}%
+    </div>
+    <div class="chip chip-down" *ngIf="stats.candidates.delta < 0">
+      <span class="icon">⬇</span>{{ stats.candidates.delta | number:'1.0-0' }}%
+    </div>
+
+    <!-- Keep Hire inside the card; stop propagation so card doesn't navigate -->
+    <button
+      class="btn hire-btn"
+      type="button"
+      (click)="$event.stopPropagation(); openHire()">
+      Hire
+    </button>
+  </div>
+</div>
+
 
     <!-- ===== Second Row: Recent Candidates (left) + Upcoming Interviews (right) ===== -->
     <div class="split-panels">

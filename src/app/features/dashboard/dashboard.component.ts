@@ -1,166 +1,228 @@
-import {
-  Component, OnInit, OnChanges, SimpleChanges, Input
-} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-/* ---- Data contracts used by the dashboard ---- */
-export interface Employee { id: number; name: string; email?: string; hireDate?: string | Date; role?: string; }
-export interface Department { id: number; name: string; }
-export interface Company { id: number; name: string; }
-export type CandidateStatus = 'Applied' | 'Interview' | 'Hired' | 'Rejected';
-export interface Candidate { id: number; name: string; status?: CandidateStatus; createdAt?: string | Date; }
-export interface UpcomingItem { id: number; when: string | Date; title: string; person?: string; status?: 'Scheduled' | 'Pending' | 'Canceled'; }
+type RouteKey = 'employees' | 'departments' | 'companies' | 'candidates';
 
-interface Stat { count: number; delta?: number; }
+interface Metric { count: number; delta: number; }
+interface Stats {
+  employees:   Metric;
+  departments: Metric;
+  companies:   Metric;
+  candidates:  Metric;
+}
 
-/* Change this if your API base is different (e.g. '' or environment.api) */
-const API_BASE = '/api';
+interface Candidate {
+  name: string;
+  status: string;
+  email?: string;
+  department?: string;
+}
+
+const API = {
+  employees:   '/api/employees',
+  departments: '/api/departments',
+  companies:   '/api/companies',
+  candidates:  '/api/candidates'
+};
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit, OnChanges {
-  /* ===== Optional inputs (if parent passes real arrays, we'll use them) ===== */
-  @Input() employees: Employee[] = [];
-  @Input() departments: Department[] = [];
-  @Input() companies: Company[] = [];
-  @Input() candidates: Candidate[] = [];
-  @Input() upcoming: UpcomingItem[] = [];
+export class DashboardComponent implements OnInit {
 
-  @Input() employeesDelta?: number;
-  @Input() departmentsDelta?: number;
-  @Input() companiesDelta?: number;
-  @Input() candidatesDelta?: number;
+    
 
-  /* ===== Theme state ===== */
-  theme: 'mint' | 'white' = 'mint';
+  stats: Stats = {
+    employees:   { count: 0, delta: 0 },
+    departments: { count: 0, delta: 0 },
+    companies:   { count: 0, delta: 0 },
+    candidates:  { count: 0, delta: 0 }
 
-  /* ===== View model ===== */
-  stats: { employees: Stat; departments: Stat; companies: Stat; candidates: Stat } = {
-    employees: { count: 0 }, departments: { count: 0 }, companies: { count: 0 }, candidates: { count: 0 }
+    
   };
+
+  /** Bind your dashboard table to this: *ngFor="let c of recentCandidates" */
   recentCandidates: Candidate[] = [];
 
-  isLoading = false;
+  constructor(private router: Router, private http: HttpClient) {}
 
-  constructor(private http: HttpClient) {}
-
-  /* ---------------- Lifecycle ---------------- */
   ngOnInit(): void {
-    // theme
-    let saved: string | null = null;
-    try { saved = localStorage.getItem('hr-theme'); } catch {}
-    this.applyTheme(saved === 'white' ? 'white' : 'mint');
-
-    // if no inputs were provided, load from API
-    if (!this.hasAnyInputData()) {
-      this.loadFromApi();
-    } else {
-      this.recompute();
-    }
+    this.loadStatsAndCandidates();
   }
 
-  ngOnChanges(_: SimpleChanges): void {
-    // when inputs change (parent passes data), recompute
-    this.recompute();
-  }
+  /* ---------------- Fetch counts + candidate list ---------------- */
 
-  /* ---------------- Data loading (no hardcoded seeds) ---------------- */
-  private loadFromApi(): void {
-    this.isLoading = true;
+  private loadStatsAndCandidates(): void {
+    forkJoin([
+      this.http.get<any>(API.employees).pipe(catchError(_ => of([]))),
+      this.http.get<any>(API.departments).pipe(catchError(_ => of([]))),
+      this.http.get<any>(API.companies).pipe(catchError(_ => of([]))),
+      this.http.get<any>(API.candidates).pipe(catchError(_ => of([])))
+    ]).subscribe(([empsRaw, deptsRaw, compsRaw, candsRaw]) => {
+      var emps  = this.asArray(empsRaw);
+      var depts = this.asArray(deptsRaw);
+      var comps = this.asArray(compsRaw);
+      var cands = this.asArray(candsRaw);
 
-    const employees$   = this.http.get<Employee[]>(`${API_BASE}/employees`).pipe(catchError(() => of([])));
-    const departments$ = this.http.get<Department[]>(`${API_BASE}/departments`).pipe(catchError(() => of([])));
-    const companies$   = this.http.get<Company[]>(`${API_BASE}/companies`).pipe(catchError(() => of([])));
-    const candidates$  = this.http.get<Candidate[]>(`${API_BASE}/candidates`).pipe(catchError(() => of([])));
-    const upcoming$    = this.http.get<UpcomingItem[]>(`${API_BASE}/upcoming`).pipe(catchError(() => of([])));
+      // counts
+      this.stats.employees.count   = emps.length;
+      this.stats.departments.count = depts.length;
+      this.stats.companies.count   = comps.length;
+      this.stats.candidates.count  = cands.length;
 
-    forkJoin([employees$, departments$, companies$, candidates$, upcoming$])
-      .subscribe(([emps, depts, comps, cands, up]) => {
-        this.employees   = Array.isArray(emps)  ? emps  : [];
-        this.departments = Array.isArray(depts) ? depts : [];
-        this.companies   = Array.isArray(comps) ? comps : [];
-        this.candidates  = Array.isArray(cands) ? cands : [];
-        this.upcoming    = Array.isArray(up)    ? up    : [];
-        this.recompute();
-        this.isLoading = false;
-      }, _ => { this.isLoading = false; });
-  }
+      // deltas (vs previous snapshot)
+      var prev = this.readPrevSnapshot();
+      this.stats.employees.delta   = this.delta(prev.employees,   this.stats.employees.count);
+      this.stats.departments.delta = this.delta(prev.departments, this.stats.departments.count);
+      this.stats.companies.delta   = this.delta(prev.companies,   this.stats.companies.count);
+      this.stats.candidates.delta  = this.delta(prev.candidates,  this.stats.candidates.count);
 
-  /* ---------------- Derive view model ---------------- */
-  private recompute(): void {
-    this.stats.employees.count   = this.len(this.employees);
-    this.stats.departments.count = this.len(this.departments);
-    this.stats.companies.count   = this.len(this.companies);
-    this.stats.candidates.count  = this.len(this.candidates);
+      // candidate list for the dashboard table
+      var normalized = this.normalizeCandidates(cands);
+      // show top 5 (change the slice if you want more)
+      this.recentCandidates = normalized.slice(0, 5);
 
-    this.stats.employees.delta   = this.norm(this.employeesDelta);
-    this.stats.departments.delta = this.norm(this.departmentsDelta);
-    this.stats.companies.delta   = this.norm(this.companiesDelta);
-    this.stats.candidates.delta  = this.norm(this.candidatesDelta);
-
-    this.recentCandidates = this.pickRecent(this.candidates, 4);
-
-    // sort upcoming by soonest (won’t change if already sorted)
-    this.upcoming = (this.upcoming || []).slice().sort((a, b) => {
-      const at = new Date(a.when as any).getTime();
-      const bt = new Date(b.when as any).getTime();
-      return at - bt;
+      // save current snapshot
+      this.writeSnapshot();
+    }, _err => {
+      // Fallback to localStorage if requests failed
+      this.hydrateFromLocalStorage();
     });
   }
 
-  private hasAnyInputData(): boolean {
-    return this.len(this.employees) + this.len(this.departments) + this.len(this.companies) +
-           this.len(this.candidates) + this.len(this.upcoming) > 0;
+  // Accepts array or shapes like { data: [...] } or { items: [...] }
+  private asArray(v: any): any[] {
+    if (Array.isArray(v)) return v;
+    if (v && Array.isArray(v.data)) return v.data;
+    if (v && Array.isArray(v.items)) return v.items;
+    return [];
   }
-  private len(a: any[]): number { return Array.isArray(a) ? a.length : 0; }
-  private norm(v?: number): number | undefined {
-    if (v === null || v === undefined) { return undefined; }
-    const n = Number(v); return isNaN(n) ? undefined : n;
-  }
-  private pickRecent(list: Candidate[], take: number): Candidate[] {
-    if (!Array.isArray(list) || !list.length) return [];
-    const hasCreated = list.some(c => !!c.createdAt);
-    if (hasCreated) {
-      return list.slice().sort((a, b) => {
-        const bt = b.createdAt ? new Date(b.createdAt as any).getTime() : 0;
-        const at = a.createdAt ? new Date(a.createdAt as any).getTime() : 0;
-        return bt - at; // newest first
-      }).slice(0, take);
+
+  private normalizeCandidates(list: any[]): Candidate[] {
+    var out: Candidate[] = [];
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i] || {};
+
+      var first = r.firstName ? String(r.firstName) : '';
+      var last  = r.lastName  ? String(r.lastName)  : '';
+      var partsName = (first + ' ' + last).trim();
+
+      var name = '';
+      if (r.name) name = String(r.name);
+      else if (partsName) name = partsName;
+      else if (r.fullName) name = String(r.fullName);
+      else if (r.username) name = String(r.username);
+      else name = '—';
+
+      var status = 'Applied';
+      if (r.status) status = String(r.status);
+      else if (r.phase) status = String(r.phase);
+      else if (r.stage) status = String(r.stage);
+      else if (r.state) status = String(r.state);
+
+      out.push({
+        name: name,
+        status: status,
+        email: r.email || r.mail || r.contactEmail || '',
+        department: r.department || r.team || ''
+      });
     }
-    // else try by id
-    const allNum = list.every(c => typeof c.id === 'number');
-    if (allNum) {
-      return list.slice().sort((a, b) => (b.id as any) - (a.id as any)).slice(0, take);
+    return out;
+  }
+
+  /* ---------------- Navigation for clickable cards ---------------- */
+
+  goTo(route: RouteKey): void {
+    this.router.navigate(['/', route]).then(function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  goToSpace(event: KeyboardEvent, route: RouteKey): void {
+    event.preventDefault();
+    this.goTo(route);
+  }
+
+  /* ---------------- Inner buttons ---------------- */
+
+  openAddEmployee(): void {
+    this.router.navigate(['/employees'], { queryParams: { add: '1' } }).then(function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  openHire(): void {
+    this.router.navigate(['/candidates'], { queryParams: { add: '1' } }).then(function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  /* ---------------- Delta + snapshot helpers ---------------- */
+
+  private delta(prevCount: number, currCount: number): number {
+    var p = Number(prevCount);
+    var c = Number(currCount);
+    if (!isFinite(p) || p <= 0) return 0;
+    return Math.round(((c - p) / p) * 100);
+  }
+
+  private readPrevSnapshot(): { employees: number; departments: number; companies: number; candidates: number } {
+    try {
+      var raw = localStorage.getItem('stats_prev');
+      if (!raw) return { employees: 0, departments: 0, companies: 0, candidates: 0 };
+      var obj = JSON.parse(raw);
+      return {
+        employees:   obj && obj.employees   && isFinite(obj.employees.count)   ? Number(obj.employees.count)   : 0,
+        departments: obj && obj.departments && isFinite(obj.departments.count) ? Number(obj.departments.count) : 0,
+        companies:   obj && obj.companies   && isFinite(obj.companies.count)   ? Number(obj.companies.count)   : 0,
+        candidates:  obj && obj.candidates  && isFinite(obj.candidates.count)  ? Number(obj.candidates.count)  : 0
+      };
+    } catch (_e) {
+      return { employees: 0, departments: 0, companies: 0, candidates: 0 };
     }
-    // fallback: last N
-    const start = Math.max(0, list.length - take);
-    return list.slice(start);
   }
 
-  /* ---------------- Theme toggle ---------------- */
-  onToggleChange(ev: Event): void {
-    const checked = (ev.target as HTMLInputElement).checked;
-    this.applyTheme(checked ? 'mint' : 'white');
-  }
-  private applyTheme(next: 'mint' | 'white'): void {
-    this.theme = next;
-    const root = document.documentElement;
-    if (next === 'white') root.classList.add('theme-white'); else root.classList.remove('theme-white');
-    try { localStorage.setItem('hr-theme', next); } catch {}
+  private writeSnapshot(): void {
+    try {
+      localStorage.setItem('stats_prev', JSON.stringify({
+        employees:   { count: this.stats.employees.count },
+        departments: { count: this.stats.departments.count },
+        companies:   { count: this.stats.companies.count },
+        candidates:  { count: this.stats.candidates.count }
+      }));
+    } catch (_e) { /* ignore quota */ }
   }
 
-  /* ---------------- TrackBy helpers (optional) ---------------- */
-  trackById(_: number, item: { id: number }) { return item.id; }
+  private hydrateFromLocalStorage(): void {
+    var employees   = this.safeParseArray(localStorage.getItem('employees'));
+    var departments = this.safeParseArray(localStorage.getItem('departments'));
+    var companies   = this.safeParseArray(localStorage.getItem('companies'));
+    var candidates  = this.safeParseArray(localStorage.getItem('candidates'));
 
-  /* ---------------- Button stubs ---------------- */
-  schedule(item: UpcomingItem): void {}
-  email(item: UpcomingItem): void {}
-  openSchedule(): void {}
-  addNew(): void {}
-  openHire(): void {}
+    this.stats.employees.count   = employees.length;
+    this.stats.departments.count = departments.length;
+    this.stats.companies.count   = companies.length;
+    this.stats.candidates.count  = candidates.length;
+
+    var prev = this.readPrevSnapshot();
+    this.stats.employees.delta   = this.delta(prev.employees,   this.stats.employees.count);
+    this.stats.departments.delta = this.delta(prev.departments, this.stats.departments.count);
+    this.stats.companies.delta   = this.delta(prev.companies,   this.stats.companies.count);
+    this.stats.candidates.delta  = this.delta(prev.candidates,  this.stats.candidates.count);
+
+    this.recentCandidates = this.normalizeCandidates(candidates).slice(0, 5);
+
+    this.writeSnapshot();
+  }
+
+  private safeParseArray(raw: string | null): any[] {
+    if (!raw) return [];
+    try {
+      var v = JSON.parse(raw);
+      return Array.isArray(v) ? v : [];
+    } catch (_e) { return []; }
+  }
 }
