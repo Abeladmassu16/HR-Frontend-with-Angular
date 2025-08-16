@@ -1,62 +1,129 @@
-<mat-card class="glass-3d mat-elevation-z8" elevateOnHover tiltCard>
-  <div class="section-head">
-    <h2>Candidates</h2>
-    <button mat-raised-button color="primary" class="primary-pill" (click)="add()">
-      <mat-icon>add</mat-icon><span>Add</span>
-    </button>
+<!-- Candidates Page -->
+<div class="page-wrap">
+  <div class="page-shell">
+    <!-- Top bar -->
+    <div class="bar glassy">
+      <div class="search">
+        <span class="icon" aria-hidden="true">🔎</span>
+        <input
+          type="text"
+          placeholder="Search candidates"
+          [(ngModel)]="searchTerm"
+          (input)="filtered = filterNow(searchTerm)" />
+      </div>
+
+      <button type="button" class="btn add" (click)="openAdd()">
+        <span class="plus" aria-hidden="true">＋</span>
+        Add
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table glassy" role="table" aria-label="Candidates">
+      <div class="row thead" role="row">
+        <div class="th" role="columnheader">ID</div>
+        <div class="th" role="columnheader">Name</div>
+        <div class="th" role="columnheader">Email</div>
+        <div class="th" role="columnheader">Status</div>
+        <div class="th actions" role="columnheader">Actions</div>
+      </div>
+
+      <ng-container *ngIf="(filtered || candidates)?.length; else emptyCandidates">
+        <div
+          class="row"
+          role="row"
+          *ngFor="let cand of (filtered || candidates); trackBy: trackById">
+          <div class="td" role="cell">{{ cand.id }}</div>
+          <div class="td" role="cell">{{ cand.name }}</div>
+          <div class="td" role="cell">{{ cand.email }}</div>
+          <div class="td" role="cell">
+            <span
+              class="badge"
+              [ngClass]="'badge ' + (cand.status | lowercase)">
+              {{ cand.status }}
+            </span>
+          </div>
+          <div class="td actions" role="cell">
+            <button class="chip blue" type="button" (click)="openEdit(cand)" aria-label="Edit candidate">
+              ✏
+            </button>
+            <button class="chip red" type="button" (click)="confirmDelete(cand)" aria-label="Delete candidate">
+              🗑
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyCandidates>
+        <div class="row" role="row">
+          <div class="td" role="cell" style="grid-column: 1 / -1; opacity:.7; padding:22px;">
+            No candidates found.
+          </div>
+        </div>
+      </ng-template>
+    </div>
   </div>
+</div>
 
-  <mat-form-field style="width:260px; margin:12px 0;">
-    <input matInput placeholder="Filter" (keyup)="filter($event.target.value)">
-  </mat-form-field>
+<!-- Add / Edit Modal -->
+<div class="glass-modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
+  <div class="glass-modal" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">{{ modalMode === 'add' ? 'Add Candidate' : 'Edit Candidate' }}</h3>
 
-  <div class="table-wrap mat-elevation-z2">
-    <table mat-table [dataSource]="data" matSort>
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-        <td mat-cell *matCellDef="let r">{{ r.id }}</td>
-      </ng-container>
+    <form class="modal-form" (ngSubmit)="saveForm()" #candidateForm="ngForm">
+      <div class="form-row">
+        <label for="pName">Name</label>
+        <input
+          id="pName"
+          class="field"
+          type="text"
+          name="name"
+          required
+          [(ngModel)]="formCandidate.name" />
+      </div>
 
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-        <td mat-cell *matCellDef="let r">{{ r.name }}</td>
-      </ng-container>
+      <div class="form-row">
+        <label for="pEmail">Email</label>
+        <input
+          id="pEmail"
+          class="field"
+          type="email"
+          name="email"
+          required
+          [(ngModel)]="formCandidate.email"
+          #emailCtrl="ngModel"
+          [pattern]="emailRegex"
+          [class.invalid]="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)" />
+        <small class="error" *ngIf="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)">
+          Invalid input: please enter a valid email (e.g. user@example.com).
+        </small>
+      </div>
 
-      <ng-container matColumnDef="dept">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Department</th>
-        <td mat-cell *matCellDef="let r">{{ deptName(r.appliedForDepartmentId) }}</td>
-      </ng-container>
+      <div class="form-row">
+        <label for="pStatus">Status</label>
+        <select
+          id="pStatus"
+          class="field"
+          name="status"
+          required
+          [(ngModel)]="formCandidate.status">
+          <option value="" disabled>Select status</option>
+          <option>Applied</option>
+          <option>Interview</option>
+          <option>Hired</option>
+          <option>Rejected</option>
+        </select>
+      </div>
 
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-        <td mat-cell *matCellDef="let r">{{ r.status }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let r">{{ r.email }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="phone">
-        <th mat-header-cell *matHeaderCellDef>Phone</th>
-        <td mat-cell *matCellDef="let r">{{ r.phone }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let r">
-          <button mat-icon-button class="icon-btn edit" (click)="edit(r)">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button class="icon-btn delete" (click)="remove(r.id)">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let r; columns: displayedColumns;"></tr>
-    </table>
-    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5,10,20]"></mat-paginator>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" (click)="closeModal()">Cancel</button>
+        <button
+          type="submit"
+          class="btn mint"
+          [disabled]="modalSaving || !formCandidate?.name?.trim() || emailCtrl.invalid || !formCandidate?.status">
+          {{ modalMode === 'add' ? 'Create' : 'Save' }}
+        </button>
+      </div>
+    </form>
   </div>
-</mat-card>
+</div>

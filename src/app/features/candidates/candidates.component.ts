@@ -1,14 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Candidate } from '../../models/candidate';
-import { CandidateService } from '../../../services/candidate.service';
-import { DepartmentService } from '../../../services/department.service';
-import { Department } from '../../models/department';
-import { CandidateDialogComponent } from './candidate-dialog.component';
+import { Component, OnInit } from '@angular/core';
+import { HrDataService, Candidate } from '../../shared/hr-data.service';
 
 @Component({
   selector: 'app-candidates',
@@ -16,24 +7,118 @@ import { CandidateDialogComponent } from './candidate-dialog.component';
   styleUrls: ['./candidates.component.scss']
 })
 export class CandidatesComponent implements OnInit {
-  displayedColumns = ['id','name','dept','status','email','phone','actions'];
-  data = new MatTableDataSource<Candidate>([]);
-  depts: Department[] = [];
 
-  @ViewChild(MatPaginator,{static:true}) paginator: MatPaginator;
-  @ViewChild(MatSort,{static:true}) sort: MatSort;
+  candidates: Candidate[] = [];
+  filtered: Candidate[] = [];
+  searchTerm = '';
 
-  constructor(private api: CandidateService, private deptsApi: DepartmentService, private dialog: MatDialog, private sb: MatSnackBar) {}
+  // modal state
+  modalOpen = false;
+  modalMode: 'add' | 'edit' = 'add';
+  modalSaving = false;
 
-  ngOnInit() {
-    this.data.paginator = this.paginator; this.data.sort = this.sort;
-    this.deptsApi.getAll().subscribe(d => this.depts = d);
-    this.load();
+  // form + validation
+  emailRegex = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
+  formCandidate: Partial<Candidate> = {};
+
+  constructor(private data: HrDataService) {}
+
+  ngOnInit(): void {
+    // Subscribe to the shared source of truth (in-memory API via service)
+    this.data.candidates$.subscribe((list) => {
+      this.candidates = list || [];
+      this.filtered = this.filterNow(this.searchTerm);
+    });
+
+    // IMPORTANT: no component-level seeding here (backend already seeds)
   }
-  load(){ this.api.getAll().subscribe(rows => this.data.data = rows); }
-  deptName(id: number){ const d = this.depts.find(x => x.id === id); return d ? d.name : '-'; }
-  filter(v:string){ this.data.filter = v.trim().toLowerCase(); }
-  add(){ this.dialog.open(CandidateDialogComponent,{width:'560px',data:{mode:'create'}}).afterClosed().subscribe(ok=>{ if(ok){ this.sb.open('Candidate created','OK',{duration:1500}); this.load(); } }); }
-  edit(r: Candidate){ this.dialog.open(CandidateDialogComponent,{width:'560px',data:{mode:'edit', candidate:r}}).afterClosed().subscribe(ok=>{ if(ok){ this.sb.open('Candidate updated','OK',{duration:1500}); this.load(); } }); }
-  remove(id:number){ this.api.delete(id).subscribe(()=>{ this.sb.open('Candidate deleted','OK',{duration:1500}); this.load(); }); }
+
+  // ------- search -------
+  onSearch(term: string): void {
+    this.searchTerm = term;
+    this.filtered = this.filterNow(term);
+  }
+
+  filterNow(term: string): Candidate[] {
+    const q = (term || '').toLowerCase();
+    const list = this.candidates || [];
+    if (!q) { return list.slice(); }
+    return list.filter(function (r: any) {
+      const vals = [r && r.id, r && r.name, r && r.email, r && r.status];
+      for (let i = 0; i < vals.length; i++) {
+        const v = '' + (vals[i] == null ? '' : vals[i]);
+        if (v.toLowerCase().indexOf(q) !== -1) { return true; }
+      }
+      return false;
+    });
+  }
+
+  trackById(_: number, row: Candidate) { return row && row.id; }
+
+  // ------- modal -------
+  openAdd(): void {
+    this.modalMode = 'add';
+    this.formCandidate = { name: '', email: '', status: 'Applied' };
+    this.modalOpen = true;
+  }
+
+  openEdit(row: Candidate): void {
+    this.modalMode = 'edit';
+    this.formCandidate = { id: row.id, name: row.name, email: row.email, status: row.status };
+    this.modalOpen = true;
+  }
+
+  closeModal(): void {
+    if (this.modalSaving) { return; }
+    this.modalOpen = false;
+  }
+
+  // ------- persist -------
+  saveForm(): void {
+    if (!this.formCandidate) { return; }
+    const name = '' + (this.formCandidate.name || '');
+    if (name.trim() === '') { return; }
+
+    const email = ('' + (this.formCandidate.email || '')).trim();
+    if (email && !(new RegExp(this.emailRegex).test(email))) { return; }
+
+    const status = (this.formCandidate.status as any) || 'Applied';
+
+    // Prevent duplicate by email on ADD
+    if (this.modalMode === 'add' && email) {
+      const lower = email.toLowerCase();
+      const exists = (this.candidates || []).some(function (c: Candidate) {
+        return ('' + (c && c.email ? c.email : '')).toLowerCase() === lower;
+      });
+      if (exists) {
+        window.alert('A candidate with this email already exists.');
+        return;
+      }
+    }
+
+    const payload: Partial<Candidate> = {
+      id: this.formCandidate.id,
+      name: name,
+      email: email,
+      status: status
+    };
+
+    this.modalSaving = true;
+    const obs = (this.modalMode === 'add')
+      ? this.data.addCandidate(payload)
+      : this.data.updateCandidate(payload as Candidate);
+
+    obs.subscribe(
+      () => { this.modalOpen = false; this.modalSaving = false; },
+      ()  => { this.modalSaving = false; }
+    );
+  }
+
+  confirmDelete(row: Candidate): void {
+    if (window.confirm('Delete this candidate?')) { this.delete(row); }
+  }
+
+  delete(row: Candidate): void {
+    this.data.deleteCandidate(Number(row.id)).subscribe();
+  }
 }

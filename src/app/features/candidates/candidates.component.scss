@@ -1,1 +1,143 @@
-table { width: 100%; }
+/* ===== Layout spacing like Employees ===== */
+.page-wrap { padding: 24px 16px; }
+
+/* Centers the page and prevents full-screen stretch */
+.page-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* ---- Top bar ---- */
+.bar.glassy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+.search { flex: 1; display: flex; align-items: center; gap: 8px; }
+.search input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  background: rgba(255, 255, 255, .6);
+  box-sizing: border-box;
+}
+
+.btn.add {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  color: #07352d;
+  background: linear-gradient(180deg, #5fe0c2, #33c0a5);
+}
+.plus { margin-right: 6px; }
+
+/* ---- Table ---- */
+.table.glassy {
+  margin: 16px 0 0;          /* top gap under the bar */
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .10), inset 0 1px 0 rgba(255, 255, 255, .65);
+}
+
+/* Companies columns: id | name | location | actions */
+/* Candidates columns: id | name | email | status | actions */
+/* Adjust per page below. If you use both files, keep the one that matches. */
+.row {
+  display: grid;
+  align-items: center;
+  /* For Companies: */
+  /* grid-template-columns: 90px 2fr 2fr 140px; */
+  /* For Candidates: */
+  /* grid-template-columns: 90px 2fr 2fr 1.2fr 140px; */
+}
+
+.thead {
+  font-weight: 700;
+  color: #3b4c52;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .45);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .32), rgba(255, 255, 255, .18));
+}
+
+.row:not(.thead) {
+  padding: 16px 18px;
+  border-top: 1px solid rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .10);
+}
+.row:not(.thead):nth-child(even) { background: rgba(255, 255, 255, .16); }
+
+.th, .td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.actions { display: flex; gap: 8px; }
+
+.chip { border: none; border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+.chip.blue { background: #dbe7ff; }
+.chip.red  { background: #ffd7d7; }
+
+/* ---- Candidates status badges (safe if present; unused on Companies) ---- */
+.badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-weight: 700; }
+.badge.applied   { background: #dbe7ff; color: #2a3a52; }
+.badge.interview { background: #fff1c7; color: #6c4a00; }
+.badge.hired     { background: #ccf4e7; color: #0b463a; }
+.badge.rejected  { background: #ffd7d7; color: #7f1d1d; }
+
+/* ---- Modal (fix inputs overflowing the glass background) ---- */
+.glass-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .35);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+
+.glass-modal {
+  width: min(820px, 92vw);
+  border-radius: 18px;
+  padding: 22px;
+  overflow: hidden;               /* prevents children from overflowing */
+  background: rgba(255, 255, 255, .65);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .75);
+}
+
+/* ensure every child respects the panel width */
+.glass-modal, .glass-modal * { box-sizing: border-box; }
+
+.modal-title { margin: 6px 0 12px; font-size: 26px; font-weight: 800; color: #0f2c2a; }
+.modal-form .form-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+
+.field {
+  width: 100%;
+  min-width: 0;                   /* prevents flex overflow on small screens */
+  padding: 14px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, .08);
+  background: rgba(255, 255, 255, .92);
+}
+.field.invalid { border-color: #ff7a7a; }
+.error { color: #b93a3a; font-size: 12px; }
+
+.modal-actions { display: flex; gap: 12px; margin-top: 12px; }
+.btn.ghost { flex: 1; padding: 12px; border-radius: 12px; background: rgba(255, 255, 255, .8); border: 1px solid rgba(0, 0, 0, .08); }
+.btn.mint  { flex: 1; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(180deg, #67ead0, #31bf9f); color: #07352d; font-weight: 800; }
+
+/* ---- Pick ONE grid-template per page ---- */
+/* For Companies: */
+:host-context(app-companies) .row {
+  grid-template-columns: 90px 2fr 2fr 140px;
+}
+/* For Candidates: */
+:host-context(app-candidates) .row {
+  grid-template-columns: 90px 2fr 2fr 1.2fr 140px;
+}

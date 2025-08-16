@@ -1,29 +1,99 @@
-<mat-card class="glass-3d mat-elevation-z8" elevateOnHover tiltCard>
-  <div class="section-head">
-    <h2>Companies</h2>
-    <button mat-raised-button class="primary-pill" (click)="add()">
-      <mat-icon>add</mat-icon><span>Add</span>
-    </button>
-  </div>
+<!-- Companies Page -->
+<div class="page-wrap">
+  <div class="page-shell">
+    <!-- Top bar -->
+    <div class="bar glassy">
+      <div class="search">
+        <span class="icon" aria-hidden="true">🔎</span>
+        <input
+          type="text"
+          placeholder="Search companies"
+          [(ngModel)]="searchTerm"
+          (input)="filtered = filterNow(searchTerm)" />
+      </div>
 
-  <mat-form-field style="width:260px; margin:12px 0;">
-    <input matInput placeholder="Filter" (keyup)="filter($event.target.value)">
-  </mat-form-field>
+      <button type="button" class="btn add" (click)="openAdd()">
+        <span class="plus" aria-hidden="true">＋</span>
+        Add
+      </button>
+    </div>
 
-  <div class="table-wrap mat-elevation-z2">
-    <table mat-table [dataSource]="data" matSort>
-      <!-- your existing columns -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let r">
-          <button mat-icon-button class="icon-btn edit"   (click)="edit(r)"><mat-icon>edit</mat-icon></button>
-          <button mat-icon-button class="icon-btn delete" (click)="remove(r.id)"><mat-icon>delete</mat-icon></button>
-        </td>
+    <!-- Table -->
+    <div class="table glassy" role="table" aria-label="Companies">
+      <div class="row thead" role="row">
+        <div class="th" role="columnheader">ID</div>
+        <div class="th" role="columnheader">Name</div>
+        <div class="th" role="columnheader">Location</div>
+        <div class="th actions" role="columnheader">Actions</div>
+      </div>
+
+      <ng-container *ngIf="(filtered || companies)?.length; else emptyCompanies">
+        <div
+          class="row"
+          role="row"
+          *ngFor="let c of (filtered || companies); trackBy: trackById">
+          <div class="td" role="cell">{{ c.id }}</div>
+          <div class="td" role="cell">{{ c.name }}</div>
+          <div class="td" role="cell">{{ c.location }}</div>
+          <div class="td actions" role="cell">
+            <button class="chip blue" type="button" (click)="openEdit(c)" aria-label="Edit company">
+              ✏
+            </button>
+            <button class="chip red" type="button" (click)="confirmDelete(c)" aria-label="Delete company">
+              🗑
+            </button>
+          </div>
+        </div>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let r; columns: displayedColumns;"></tr>
-    </table>
-    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5,10,20]"></mat-paginator>
+      <ng-template #emptyCompanies>
+        <div class="row" role="row">
+          <div class="td" role="cell" style="grid-column: 1 / -1; opacity:.7; padding:22px;">
+            No companies found.
+          </div>
+        </div>
+      </ng-template>
+    </div>
   </div>
-</mat-card>
+</div>
+
+<!-- Add / Edit Modal -->
+<div class="glass-modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
+  <div class="glass-modal" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">{{ modalMode === 'add' ? 'Add Company' : 'Edit Company' }}</h3>
+
+    <form class="modal-form" (ngSubmit)="saveForm()" #companyForm="ngForm">
+      <div class="form-row">
+        <label for="cName">Name</label>
+        <input
+          id="cName"
+          class="field"
+          type="text"
+          name="name"
+          required
+          [(ngModel)]="formCompany.name" />
+      </div>
+
+      <div class="form-row">
+        <label for="cLoc">Location</label>
+        <input
+          id="cLoc"
+          class="field"
+          type="text"
+          name="location"
+          required
+          [(ngModel)]="formCompany.location" />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" (click)="closeModal()">Cancel</button>
+        <button
+          type="submit"
+          class="btn mint"
+          [disabled]="modalSaving || !formCompany?.name?.trim() || !formCompany?.location?.trim()">
+          {{ modalMode === 'add' ? 'Create' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

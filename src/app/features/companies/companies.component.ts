@@ -1,12 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Company } from '../../models/company';
-import { CompanyService } from '../../../services/company.service';
-import { CompanyDialogComponent } from './company-dialog.component';
+import { Component, OnInit } from '@angular/core';
+
+interface Company {
+  id: number;
+  name: string;
+  location: string;
+}
 
 @Component({
   selector: 'app-companies',
@@ -14,16 +12,99 @@ import { CompanyDialogComponent } from './company-dialog.component';
   styleUrls: ['./companies.component.scss']
 })
 export class CompaniesComponent implements OnInit {
-  displayedColumns = ['id','name','location','actions'];
-  data = new MatTableDataSource<Company>([]);
-  @ViewChild(MatPaginator,{static:true}) paginator: MatPaginator;
-  @ViewChild(MatSort,{static:true}) sort: MatSort;
+  companies: Company[] = [];
+  filtered: Company[] = [];
+  searchTerm = '';
 
-  constructor(private api: CompanyService, private dialog: MatDialog, private sb: MatSnackBar) {}
-  ngOnInit() { this.data.paginator = this.paginator; this.data.sort = this.sort; this.load(); }
-  load() { this.api.getAll().subscribe(rows => this.data.data = rows); }
-  filter(v:string){ this.data.filter = v.trim().toLowerCase(); }
-  add(){ this.dialog.open(CompanyDialogComponent,{width:'480px',data:{mode:'create'}}).afterClosed().subscribe(ok=>{ if(ok){ this.sb.open('Company created','OK',{duration:1500}); this.load(); } }); }
-  edit(r: Company){ this.dialog.open(CompanyDialogComponent,{width:'480px',data:{mode:'edit', company:r}}).afterClosed().subscribe(ok=>{ if(ok){ this.sb.open('Company updated','OK',{duration:1500}); this.load(); } }); }
-  remove(id:number){ this.api.delete(id).subscribe(()=>{ this.sb.open('Company deleted','OK',{duration:1500}); this.load(); }); }
+  // modal state
+  modalOpen = false;
+  modalMode: 'add' | 'edit' = 'add';
+  modalSaving = false;
+
+  formCompany: Partial<Company> = {};
+
+  ngOnInit(): void {
+    // seed if empty (replace with service call if you have one)
+    if (!this.companies || this.companies.length === 0) {
+      this.companies = [{ id: 1, name: 'XOKA Tech', location: 'Addis Ababa' }];
+    }
+    this.filtered = this.companies.slice();
+  }
+
+  // ===== top bar actions
+  openAdd(): void {
+    this.modalMode = 'add';
+    this.formCompany = { name: '', location: '' };
+    this.modalOpen = true;
+  }
+
+  openEdit(row: Company): void {
+    this.modalMode = 'edit';
+    this.formCompany = { id: row.id, name: row.name, location: row.location };
+    this.modalOpen = true;
+  }
+
+  closeModal(): void {
+    if (this.modalSaving) { return; }
+    this.modalOpen = false;
+  }
+
+  // ===== persist
+  saveForm(): void {
+    if (!this.formCompany || !this.formCompany.name || ('' + this.formCompany.name).trim() === '') {
+      return;
+    }
+    this.modalSaving = true;
+    try {
+      if (this.modalMode === 'add') {
+        const nextId =
+          (this.companies && this.companies.length
+            ? Math.max.apply(null, this.companies.map(r => Number(r.id) || 0))
+            : 0) + 1;
+
+        const newRow: Company = {
+          id: nextId,
+          name: '' + this.formCompany.name,
+          location: '' + (this.formCompany.location || '')
+        };
+        this.companies.push(newRow);
+      } else {
+        const id = Number(this.formCompany.id);
+        for (let i = 0; i < this.companies.length; i++) {
+          if (Number(this.companies[i].id) === id) {
+            this.companies[i] = {
+              id,
+              name: '' + this.formCompany.name,
+              location: '' + (this.formCompany.location || '')
+            };
+            break;
+          }
+        }
+      }
+      this.filtered = this.filterNow(this.searchTerm);
+      this.modalOpen = false;
+    } finally {
+      this.modalSaving = false;
+    }
+  }
+
+  delete(row: Company): void {
+    const id = Number(row && row.id);
+    this.companies = this.companies.filter(r => Number(r.id) !== id);
+    this.filtered = this.filterNow(this.searchTerm);
+  }
+
+  // ===== search
+  filterNow(term: string): Company[] {
+    const q = (term || '').toLowerCase();
+    const list = this.companies || [];
+    if (!q) { return list.slice(); }
+    return list.filter(r =>
+      ('' + (r && r.id)).toLowerCase().indexOf(q) !== -1 ||
+      ('' + (r && r.name)).toLowerCase().indexOf(q) !== -1 ||
+      ('' + (r && r.location)).toLowerCase().indexOf(q) !== -1
+    );
+  }
+
+  trackById(_: number, row: Company) { return row.id; }
 }
