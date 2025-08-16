@@ -1,143 +1,299 @@
-/* ===== Layout spacing like Employees ===== */
-.page-wrap { padding: 24px 16px; }
+/* ===========================
+   CANDIDATES PAGE (glassy)
+   =========================== */
 
-/* Centers the page and prevents full-screen stretch */
+/* Page layout with breathing room from window edges */
+.page-wrap {
+  padding: 32px 20px 56px;
+  min-height: 100vh;
+}
 .page-shell {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-/* ---- Top bar ---- */
-.bar.glassy {
+/* Header row: title + actions */
+.head-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .6);
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
 }
-
-.search { flex: 1; display: flex; align-items: center; gap: 8px; }
-.search input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, .45);
-  background: rgba(255, 255, 255, .6);
-  box-sizing: border-box;
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #0e2a23;
 }
-
-.btn.add {
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: none;
-  font-weight: 700;
-  color: #07352d;
-  background: linear-gradient(180deg, #5fe0c2, #33c0a5);
-}
-.plus { margin-right: 6px; }
-
-/* ---- Table ---- */
-.table.glassy {
-  margin: 16px 0 0;          /* top gap under the bar */
-  border-radius: 16px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, .10), inset 0 1px 0 rgba(255, 255, 255, .65);
-}
-
-/* Companies columns: id | name | location | actions */
-/* Candidates columns: id | name | email | status | actions */
-/* Adjust per page below. If you use both files, keep the one that matches. */
-.row {
-  display: grid;
+.actions {
+  display: flex;
   align-items: center;
-  /* For Companies: */
-  /* grid-template-columns: 90px 2fr 2fr 140px; */
-  /* For Candidates: */
-  /* grid-template-columns: 90px 2fr 2fr 1.2fr 140px; */
+  gap: 10px;
 }
 
-.thead {
-  font-weight: 700;
-  color: #3b4c52;
-  padding: 14px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, .45);
-  background: linear-gradient(180deg, rgba(255, 255, 255, .32), rgba(255, 255, 255, .18));
+/* Search input & primary button */
+.search {
+  width: 280px;
+  max-width: 48vw;
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 12px;
+  padding: 11px 14px;
+  background: rgba(255,255,255,.75);
+  outline: none;
+}
+.search:focus {
+  box-shadow: 0 0 0 3px rgba(51,192,165,.18);
+  border-color: rgba(51,192,165,.45);
 }
 
-.row:not(.thead) {
-  padding: 16px 18px;
-  border-top: 1px solid rgba(255, 255, 255, .35);
-  background: rgba(255, 255, 255, .10);
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #0b2e27;
+  background: rgba(255,255,255,.85);
 }
-.row:not(.thead):nth-child(even) { background: rgba(255, 255, 255, .16); }
+.btn.mint {
+  background: linear-gradient(90deg, #33c0a5, #6ad7c3);
+  color: #0b2e27;
+  box-shadow:
+    0 8px 24px rgba(51,192,165,.25),
+    inset 0 1px 0 rgba(255,255,255,.65);
+}
+.btn:active { transform: translateY(1px); }
+
+/* Glassy table container */
+.table.glassy {
+  border-radius: 18px;
+  padding: 8px;
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.45);
+  box-shadow:
+    0 28px 80px rgba(13,18,25,.18),
+    0 10px 30px rgba(13,18,25,.12),
+    inset 0 1px 0 rgba(255,255,255,.65);
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+}
+
+/* Table header & rows as a grid */
+.table .thead,
+.table .row {
+  display: grid;
+  grid-template-columns: 72px 2fr 2.2fr 1.2fr 140px; /* ID | Name | Email | Status | Actions */
+  align-items: center;
+  gap: 12px;
+}
+
+.table .thead {
+  padding: 12px 14px;
+  font-weight: 800;
+  color: #34514a;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.table .row {
+  padding: 14px 14px;
+  border-top: 1px solid rgba(0,0,0,.05);
+}
+.table .row:nth-child(odd) {
+  background: rgba(255,255,255,.06);
+}
 
 .th, .td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.actions { display: flex; gap: 8px; }
+/* Text action links */
+.link {
+  border: none;
+  background: #cfe1ff;
+  color: #14365c;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.link:hover { filter: brightness(1.02); }
+.link.danger {
+  background: #ffcfd1;
+  color: #7a1020;
+}
 
-.chip { border: none; border-radius: 10px; padding: 8px 10px; cursor: pointer; }
-.chip.blue { background: #dbe7ff; }
-.chip.red  { background: #ffd7d7; }
+/* Status badges */
+.badge {
+  display: inline-block;
+  min-width: 90px;
+  text-align: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  box-shadow:
+    0 8px 18px rgba(13,18,25,.08),
+    inset 0 1px 0 rgba(255,255,255,.65);
+}
+.badge.applied   { background: #e6eef7; color:#264b6b; }
+.badge.interview { background: #fdecc8; color:#7a4e0a; }
+.badge.hired     { background: #d6f5ec; color:#0a3d32; }
+.badge.rejected  { background: #ffd9dd; color:#7a1020; }
 
-/* ---- Candidates status badges (safe if present; unused on Companies) ---- */
-.badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-weight: 700; }
-.badge.applied   { background: #dbe7ff; color: #2a3a52; }
-.badge.interview { background: #fff1c7; color: #6c4a00; }
-.badge.hired     { background: #ccf4e7; color: #0b463a; }
-.badge.rejected  { background: #ffd7d7; color: #7f1d1d; }
+/* Empty state line across table */
+.table .row .td[style*="grid-column:1 / -1"] {
+  text-align: center;
+}
 
-/* ---- Modal (fix inputs overflowing the glass background) ---- */
-.glass-modal-overlay {
+/* ---------- Modal (outer glass wider than inner form) ---------- */
+
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.42);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 50;
+}
+
+/* Outer glass rectangle */
+.modal.glassy {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, .35);
-  display: grid;
-  place-items: center;
-  z-index: 1000;
-}
-
-.glass-modal {
-  width: min(820px, 92vw);
+  left: 50%;
+  top: 10vh;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 900px;          /* OUTER width (bigger) */
+  padding: 20px 22px;        /* thicker frame around inner form */
   border-radius: 18px;
-  padding: 22px;
-  overflow: hidden;               /* prevents children from overflowing */
-  background: rgba(255, 255, 255, .65);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 32px 80px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .75);
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.45);
+  box-shadow:
+    0 28px 80px rgba(13,18,25,.20),
+    0 10px 30px rgba(13,18,25,.12),
+    inset 0 1px 0 rgba(255,255,255,.65);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  z-index: 60;
 }
 
-/* ensure every child respects the panel width */
-.glass-modal, .glass-modal * { box-sizing: border-box; }
+/* Modal header */
+.modal-head { margin-bottom: 12px; }
+.modal-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #2ea386;
+}
 
-.modal-title { margin: 6px 0 12px; font-size: 26px; font-weight: 800; color: #0f2c2a; }
-.modal-form .form-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+/* Inner content (form) is a bit narrower than outer glass */
+.modal-body {
+  max-width: 720px;          /* INNER width (form) */
+  width: 100%;
+  margin: 0 auto;            /* center the form */
+  background: rgba(255,255,255,.68);
+  border: 1px solid rgba(255, 255, 255, 0.755);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: inset 0 1px 0 #ffffff;
+}
+
+.form-row { display: grid; gap: 6px; margin-bottom: 10px; }
+.form-row label { font-weight: 800; opacity: .85; }
 
 .field {
   width: 100%;
-  min-width: 0;                   /* prevents flex overflow on small screens */
-  padding: 14px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, .08);
-  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.88);
+  outline: none;
+  box-sizing: border-box;
 }
-.field.invalid { border-color: #ff7a7a; }
-.error { color: #b93a3a; font-size: 12px; }
-
-.modal-actions { display: flex; gap: 12px; margin-top: 12px; }
-.btn.ghost { flex: 1; padding: 12px; border-radius: 12px; background: rgba(255, 255, 255, .8); border: 1px solid rgba(0, 0, 0, .08); }
-.btn.mint  { flex: 1; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(180deg, #67ead0, #31bf9f); color: #07352d; font-weight: 800; }
-
-/* ---- Pick ONE grid-template per page ---- */
-/* For Companies: */
-:host-context(app-companies) .row {
-  grid-template-columns: 90px 2fr 2fr 140px;
+.field:focus {
+  box-shadow: 0 0 0 3px rgba(51,192,165,.15);
+  border-color: rgba(51,192,165,.45);
 }
-/* For Candidates: */
-:host-context(app-candidates) .row {
-  grid-template-columns: 90px 2fr 2fr 1.2fr 140px;
+.hint { font-size: 12px; opacity: .8; margin-top: 2px; }
+.field.invalid {
+  border-color: #fca5a5 !important;
+  box-shadow: 0 0 0 3px rgba(244,63,94,.15);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* ---------- Responsive grids ---------- */
+@media (max-width: 1024px) {
+  .table .thead, .table .row {
+    grid-template-columns: 64px 1.8fr 2fr 1.1fr 128px;
+  }
+}
+@media (max-width: 760px) {
+  .table .thead, .table .row {
+    grid-template-columns: 56px 1.6fr 1.8fr 1fr 112px;
+  }
+  .search { width: 220px; }
+}
+@media (max-width: 560px) {
+  .table .thead, .table .row {
+    grid-template-columns: 50px 1.5fr 1.6fr .9fr 100px;
+    gap: 10px;
+  }
+  .modal-body { max-width: calc(100% - 40px); } /* keep inner inset visible */
+}
+/* ===================== */
+/* Minty Glass Overrides */
+/* (place AFTER existing rules) */
+/* ===================== */
+
+:root{
+  --mint-rgb: 51,192,165;     /* #33c0a5 */
+}
+
+/* 1) Backdrop: lighter + mint-tinted (was rgba(0,0,0,.42)) */
+.modal-backdrop{
+  background:
+    radial-gradient(60% 60% at 20% 20%, rgba(var(--mint-rgb), .18), transparent 60%),
+    radial-gradient(60% 60% at 80% 80%, rgba(var(--mint-rgb), .14), transparent 60%),
+    rgba(255,255,255,.35);
+  backdrop-filter: blur(3px) saturate(110%);
+  -webkit-backdrop-filter: blur(3px) saturate(110%);
+}
+
+/* 2) Outer glass: brighter mint glass */
+.modal.glassy{
+  background: linear-gradient(180deg,
+              rgba(255,255,255,.55),
+              rgba(233,250,244,.65));
+  border: 1px solid rgba(var(--mint-rgb), .35);
+  box-shadow:
+    0 22px 60px rgba(51,192,165,.18),
+    0 10px 28px rgba(13,18,25,.10),
+    inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+/* 3) Inner panel: subtle mint wash (keeps inputs readable) */
+.modal-body{
+  background: linear-gradient(180deg,
+              rgba(214, 207, 207, 0.799),
+              rgba(240, 253, 249, 0.757));
+  border-color: rgba(var(--mint-rgb), .28);
+}
+
+/* Optional: make the table glass match the lighter mint */
+.table.glassy{
+  background: linear-gradient(180deg,
+              rgba(255,255,255,.55),
+              rgba(241,253,250,.55));
+  border-color: rgba(var(--mint-rgb), .28);
+  box-shadow:
+    0 24px 70px rgba(51,192,165,.16),
+    0 10px 28px rgba(253, 254, 254, 0.1),
+    inset 0 1px 0 rgba(255,255,255,.75);
 }

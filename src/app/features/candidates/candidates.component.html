@@ -1,62 +1,47 @@
-<!-- Candidates Page -->
 <div class="page-wrap">
   <div class="page-shell">
-    <!-- Top bar -->
-    <div class="bar glassy">
-      <div class="search">
-        <span class="icon" aria-hidden="true">🔎</span>
-        <input
-          type="text"
-          placeholder="Search candidates"
-          [(ngModel)]="searchTerm"
-          (input)="filtered = filterNow(searchTerm)" />
-      </div>
 
-      <button type="button" class="btn add" (click)="openAdd()">
-        <span class="plus" aria-hidden="true">＋</span>
-        Add
-      </button>
+    <div class="head-row">
+      <h2 class="title">Candidates</h2>
+      <div class="actions">
+        <input class="search" type="text" placeholder="Search..." (input)="onSearch($event.target.value)" />
+        <button class="btn mint" type="button" (click)="openAdd()">Add</button>
+      </div>
     </div>
 
-    <!-- Table -->
-    <div class="table glassy" role="table" aria-label="Candidates">
-      <div class="row thead" role="row">
-        <div class="th" role="columnheader">ID</div>
-        <div class="th" role="columnheader">Name</div>
-        <div class="th" role="columnheader">Email</div>
-        <div class="th" role="columnheader">Status</div>
-        <div class="th actions" role="columnheader">Actions</div>
+    <div class="table glassy">
+      <div class="row thead">
+        <div class="th">ID</div>
+        <div class="th">Name</div>
+        <div class="th">Email</div>
+        <div class="th">Status</div>
+        <div class="th" style="text-align:right;">Actions</div>
       </div>
 
-      <ng-container *ngIf="(filtered || candidates)?.length; else emptyCandidates">
-        <div
-          class="row"
-          role="row"
-          *ngFor="let cand of (filtered || candidates); trackBy: trackById">
-          <div class="td" role="cell">{{ cand.id }}</div>
-          <div class="td" role="cell">{{ cand.name }}</div>
-          <div class="td" role="cell">{{ cand.email }}</div>
-          <div class="td" role="cell">
-            <span
-              class="badge"
-              [ngClass]="'badge ' + (cand.status | lowercase)">
-              {{ cand.status }}
-            </span>
+      <ng-container *ngIf="filtered && filtered.length; else emptyState">
+        <div class="row" *ngFor="let c of filtered; trackBy: trackById">
+          <div class="td">{{ c.id }}</div>
+          <div class="td">{{ c.name }}</div>
+          <div class="td">{{ c.email }}</div>
+          <div class="td">
+            <span class="badge"
+              [ngClass]="{
+                applied: (c.status || '').toLowerCase()==='applied',
+                interview: (c.status || '').toLowerCase()==='interview',
+                hired: (c.status || '').toLowerCase()==='hired',
+                rejected: (c.status || '').toLowerCase()==='rejected'
+              }">{{ c.status }}</span>
           </div>
-          <div class="td actions" role="cell">
-            <button class="chip blue" type="button" (click)="openEdit(cand)" aria-label="Edit candidate">
-              ✏
-            </button>
-            <button class="chip red" type="button" (click)="confirmDelete(cand)" aria-label="Delete candidate">
-              🗑
-            </button>
+          <div class="td" style="text-align:right;">
+            <button class="link" type="button" (click)="openEdit(c)">Edit</button>
+            <button class="link danger" type="button" (click)="confirmDelete(c)">Delete</button>
           </div>
         </div>
       </ng-container>
 
-      <ng-template #emptyCandidates>
-        <div class="row" role="row">
-          <div class="td" role="cell" style="grid-column: 1 / -1; opacity:.7; padding:22px;">
+      <ng-template #emptyState>
+        <div class="row">
+          <div class="td" style="grid-column:1 / -1; opacity:.7; padding:16px;">
             No candidates found.
           </div>
         </div>
@@ -65,49 +50,31 @@
   </div>
 </div>
 
-<!-- Add / Edit Modal -->
-<div class="glass-modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
-  <div class="glass-modal" (click)="$event.stopPropagation()">
-    <h3 class="modal-title">{{ modalMode === 'add' ? 'Add Candidate' : 'Edit Candidate' }}</h3>
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()">
+  <div class="modal glassy" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <h3 class="modal-title">{{ modalMode === 'add' ? 'Add Candidate' : 'Edit Candidate' }}</h3>
+    </div>
 
-    <form class="modal-form" (ngSubmit)="saveForm()" #candidateForm="ngForm">
+    <form #formRef="ngForm" (ngSubmit)="saveForm(formRef)" class="modal-body">
       <div class="form-row">
-        <label for="pName">Name</label>
-        <input
-          id="pName"
-          class="field"
-          type="text"
-          name="name"
-          required
-          [(ngModel)]="formCandidate.name" />
+        <label>Name</label>
+        <input class="field" type="text" name="name" [(ngModel)]="formCandidate.name" required />
       </div>
 
       <div class="form-row">
-        <label for="pEmail">Email</label>
-        <input
-          id="pEmail"
-          class="field"
-          type="email"
-          name="email"
-          required
-          [(ngModel)]="formCandidate.email"
-          #emailCtrl="ngModel"
-          [pattern]="emailRegex"
-          [class.invalid]="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)" />
-        <small class="error" *ngIf="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)">
-          Invalid input: please enter a valid email (e.g. user@example.com).
+        <label>Email</label>
+        <input class="field" type="email" name="email" [(ngModel)]="formCandidate.email"
+               [pattern]="emailRegex" />
+        <small class="hint" *ngIf="formRef.submitted && formCandidate.email && !(formCandidate.email.trim().match(emailRegex))">
+          Please enter a valid email (example@domain.com).
         </small>
       </div>
 
       <div class="form-row">
-        <label for="pStatus">Status</label>
-        <select
-          id="pStatus"
-          class="field"
-          name="status"
-          required
-          [(ngModel)]="formCandidate.status">
-          <option value="" disabled>Select status</option>
+        <label>Status</label>
+        <select class="field" name="status" [(ngModel)]="formCandidate.status" required>
           <option>Applied</option>
           <option>Interview</option>
           <option>Hired</option>
@@ -116,11 +83,8 @@
       </div>
 
       <div class="modal-actions">
-        <button type="button" class="btn ghost" (click)="closeModal()">Cancel</button>
-        <button
-          type="submit"
-          class="btn mint"
-          [disabled]="modalSaving || !formCandidate?.name?.trim() || emailCtrl.invalid || !formCandidate?.status">
+        <button type="button" class="btn" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn mint" [disabled]="modalSaving || !formCandidate.name || formCandidate.name.trim()===''">
           {{ modalMode === 'add' ? 'Create' : 'Save' }}
         </button>
       </div>

@@ -24,24 +24,16 @@ export class CandidatesComponent implements OnInit {
   constructor(private data: HrDataService) {}
 
   ngOnInit(): void {
-    // Subscribe to the shared source of truth (in-memory API via service)
     this.data.candidates$.subscribe((list) => {
       this.candidates = list || [];
       this.filtered = this.filterNow(this.searchTerm);
     });
-
-    // IMPORTANT: no component-level seeding here (backend already seeds)
   }
 
   // ------- search -------
-  onSearch(term: string): void {
-    this.searchTerm = term;
-    this.filtered = this.filterNow(term);
-  }
-
+  onSearch(term: string): void { this.searchTerm = term; this.filtered = this.filterNow(term); }
   filterNow(term: string): Candidate[] {
-    const q = (term || '').toLowerCase();
-    const list = this.candidates || [];
+    const q = (term || '').toLowerCase(); const list = this.candidates || [];
     if (!q) { return list.slice(); }
     return list.filter(function (r: any) {
       const vals = [r && r.id, r && r.name, r && r.email, r && r.status];
@@ -52,7 +44,6 @@ export class CandidatesComponent implements OnInit {
       return false;
     });
   }
-
   trackById(_: number, row: Candidate) { return row && row.id; }
 
   // ------- modal -------
@@ -61,64 +52,59 @@ export class CandidatesComponent implements OnInit {
     this.formCandidate = { name: '', email: '', status: 'Applied' };
     this.modalOpen = true;
   }
-
   openEdit(row: Candidate): void {
     this.modalMode = 'edit';
     this.formCandidate = { id: row.id, name: row.name, email: row.email, status: row.status };
     this.modalOpen = true;
   }
+  closeModal(): void { if (!this.modalSaving) { this.modalOpen = false; } }
 
-  closeModal(): void {
-    if (this.modalSaving) { return; }
-    this.modalOpen = false;
-  }
-
-  // ------- persist -------
-  saveForm(): void {
+  // ------- persist (submit) -------
+  saveForm(formRef: any): void {
     if (!this.formCandidate) { return; }
-    const name = '' + (this.formCandidate.name || '');
-    if (name.trim() === '') { return; }
 
+    const name  = ('' + (this.formCandidate.name || '')).trim();
     const email = ('' + (this.formCandidate.email || '')).trim();
+    const status = ('' + ((this.formCandidate.status as any) || 'Applied')).trim();
+
+    if (name === '') { return; }
     if (email && !(new RegExp(this.emailRegex).test(email))) { return; }
 
-    const status = (this.formCandidate.status as any) || 'Applied';
-
-    // Prevent duplicate by email on ADD
+    // prevent duplicate email on ADD only
     if (this.modalMode === 'add' && email) {
       const lower = email.toLowerCase();
       const exists = (this.candidates || []).some(function (c: Candidate) {
         return ('' + (c && c.email ? c.email : '')).toLowerCase() === lower;
       });
-      if (exists) {
-        window.alert('A candidate with this email already exists.');
-        return;
-      }
+      if (exists) { window.alert('A candidate with this email already exists.'); return; }
     }
 
-    const payload: Partial<Candidate> = {
-      id: this.formCandidate.id,
+    const payload: Candidate = {
+      id: Number(this.formCandidate.id || 0),
       name: name,
       email: email,
-      status: status
+      status: (status as any)
     };
 
     this.modalSaving = true;
-    const obs = (this.modalMode === 'add')
-      ? this.data.addCandidate(payload)
-      : this.data.updateCandidate(payload as Candidate);
-
-    obs.subscribe(
-      () => { this.modalOpen = false; this.modalSaving = false; },
-      ()  => { this.modalSaving = false; }
+    this.data.saveCandidateWithRules(payload).subscribe(
+      () => {
+        this.modalSaving = false;
+        this.modalOpen = false;        // close on success
+        if (formRef && formRef.resetForm) { formRef.resetForm(); }
+      },
+      () => {
+        this.modalSaving = false;      // allow closing if error
+      }
     );
   }
 
-  confirmDelete(row: Candidate): void {
-    if (window.confirm('Delete this candidate?')) { this.delete(row); }
-  }
-
+  confirmDelete(row: Candidate): void { if (window.confirm('Delete this candidate?')) { this.delete(row); } }
   delete(row: Candidate): void {
-    this.data.deleteCandidate(Number(row.id)).subscribe();
+    this.modalSaving = true;
+    this.data.deleteCandidate(Number(row.id)).subscribe(
+      () => { this.modalSaving = false; this.data.refreshAll().subscribe(); },
+      () => { this.modalSaving = false; }
+    );
   }
 }
