@@ -1,110 +1,181 @@
-import { Component, OnInit } from '@angular/core';
-import { HrDataService, Candidate } from '../../shared/hr-data.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
+import { HrDataService, Candidate, Department } from '../../shared/hr-data.service';
+
+type ViewCandidate = Candidate & { departmentName?: string };
 
 @Component({
   selector: 'app-candidates',
   templateUrl: './candidates.component.html',
-  styleUrls: ['./candidates.component.scss']
+  styleUrls: ['./candidates.component.scss'],
 })
-export class CandidatesComponent implements OnInit {
+export class CandidatesComponent implements OnInit, OnDestroy {
+  // view rows
+  rows$!: Observable<ViewCandidate[]>;
+  rows: ViewCandidate[] = [];
 
-  candidates: Candidate[] = [];
-  filtered: Candidate[] = [];
-  searchTerm = '';
+  // lookup
+  departments: Department[] = [];
 
-  // modal state
+  // search
+  private search$ = new BehaviorSubject<string>('');
+
+  // modal
   modalOpen = false;
   modalMode: 'add' | 'edit' = 'add';
   modalSaving = false;
-
-  // form + validation
-  emailRegex = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
   formCandidate: Partial<Candidate> = {};
+
+  // simple email regex (client-side hint only)
+  emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  private sub?: Subscription;
+  private depSub?: Subscription;
 
   constructor(private data: HrDataService) {}
 
   ngOnInit(): void {
-    this.data.candidates$.subscribe((list) => {
-      this.candidates = list || [];
-      this.filtered = this.filterNow(this.searchTerm);
-    });
+    // make sure all subjects are hydrated
+    this.data.refreshAll().subscribe();
+
+    // departments list for the select
+    this.depSub = this.data.departments$.subscribe((ds) => (this.departments = ds || []));
+
+    // join candidates + departments, then filter by search
+    this.rows$ = combineLatest([
+      this.data.candidates$,
+      this.data.departments$,
+      this.search$.pipe(startWith('')),
+    ]).pipe(
+      map(([cands, depts, term]) => {
+        const q = (term || '').toLowerCase().trim();
+        const dList = depts || [];
+
+        const joined: ViewCandidate[] = (cands || []).map((c) => {
+          // resolve department name
+          const depId: any = (c as any).departmentId;
+          let depName = '';
+          for (let i = 0; i < dList.length; i++) {
+            if (Number(dList[i].id) === Number(depId)) {
+              depName = dList[i].name || '';
+              break;
+            }
+          }
+          // best-effort display name
+          let displayName = (c as any).name as string;
+          if (!displayName || displayName.trim() === '') {
+            const fn = ((c as any).firstName || '') as string;
+            const ln = ((c as any).lastName || '') as string;
+            const fromParts = (fn + ' ' + ln).trim();
+            if (fromParts) {
+              displayName = fromParts;
+            } else {
+              const local = ((c.email || '').split('@')[0] || '')
+                .replace(/[._-]+/g, ' ')
+                .trim();
+              displayName = local ? local.replace(/\b\w/g, (m) => m.toUpperCase()) : '';
+            }
+          }
+
+          return { ...c, name: displayName, departmentName: depName };
+        });
+
+        if (!q) return joined;
+
+        return joined.filter((r) => {
+          const name = (r.name || '').toLowerCase();
+          const email = (r.email || '').toLowerCase();
+          const dep = (r.departmentName || '').toLowerCase();
+          const status = (r.status || '').toLowerCase();
+          return (
+            name.includes(q) ||
+            email.includes(q) ||
+            dep.includes(q) ||
+            status.includes(q)
+          );
+        });
+      })
+    );
+
+    this.sub = this.rows$.subscribe((view) => (this.rows = view || []));
   }
 
-  // ------- search -------
-  onSearch(term: string): void { this.searchTerm = term; this.filtered = this.filterNow(term); }
-  filterNow(term: string): Candidate[] {
-    const q = (term || '').toLowerCase(); const list = this.candidates || [];
-    if (!q) { return list.slice(); }
-    return list.filter(function (r: any) {
-      const vals = [r && r.id, r && r.name, r && r.email, r && r.status];
-      for (let i = 0; i < vals.length; i++) {
-        const v = '' + (vals[i] == null ? '' : vals[i]);
-        if (v.toLowerCase().indexOf(q) !== -1) { return true; }
-      }
-      return false;
-    });
+  ngOnDestroy(): void {
+    if (this.sub) this.sub.unsubscribe();
+    if (this.depSub) this.depSub.unsubscribe();
   }
-  trackById(_: number, row: Candidate) { return row && row.id; }
 
-  // ------- modal -------
+  onSearch(value: string): void {
+    this.search$.next(value || '');
+  }
+
   openAdd(): void {
     this.modalMode = 'add';
-    this.formCandidate = { name: '', email: '', status: 'Applied' };
+    const firstDepId =
+      this.departments && this.departments.length ? this.departments[0].id : undefined;
+
+    this.formCandidate = {
+      name: '',
+      email: '',
+      status: 'Applied',
+      departmentId: firstDepId,
+    } as Partial<Candidate>;
+
     this.modalOpen = true;
   }
-  openEdit(row: Candidate): void {
+
+  openEdit(row: ViewCandidate): void {
     this.modalMode = 'edit';
-    this.formCandidate = { id: row.id, name: row.name, email: row.email, status: row.status };
+    this.formCandidate = {
+      id: row.id,
+      name: row.name || '',
+      email: row.email || '',
+      status: row.status || 'Applied',
+      departmentId: (row as any).departmentId,
+    } as Partial<Candidate>;
     this.modalOpen = true;
   }
-  closeModal(): void { if (!this.modalSaving) { this.modalOpen = false; } }
 
-  // ------- persist (submit) -------
-  saveForm(formRef: any): void {
-    if (!this.formCandidate) { return; }
+  closeModal(): void {
+    this.modalOpen = false;
+    this.modalSaving = false;
+  }
 
-    const name  = ('' + (this.formCandidate.name || '')).trim();
-    const email = ('' + (this.formCandidate.email || '')).trim();
-    const status = ('' + ((this.formCandidate.status as any) || 'Applied')).trim();
+  /** Strong submit path; called from (ngSubmit) and button (click) */
+  saveForm(): void {
+    if (this.modalSaving) return;
+    this.modalSaving = true;
 
-    if (name === '') { return; }
-    if (email && !(new RegExp(this.emailRegex).test(email))) { return; }
+    const payload: Partial<Candidate> = { ...this.formCandidate };
 
-    // prevent duplicate email on ADD only
-    if (this.modalMode === 'add' && email) {
-      const lower = email.toLowerCase();
-      const exists = (this.candidates || []).some(function (c: Candidate) {
-        return ('' + (c && c.email ? c.email : '')).toLowerCase() === lower;
-      });
-      if (exists) { window.alert('A candidate with this email already exists.'); return; }
-    }
+    if (payload.name) payload.name = String(payload.name).trim();
+    if (payload.email) payload.email = String(payload.email).trim();
 
-    const payload: Candidate = {
-      id: Number(this.formCandidate.id || 0),
-      name: name,
-      email: email,
-      status: (status as any)
+    const done = () => {
+      this.modalSaving = false;
+      this.closeModal();
+    };
+    const fail = () => {
+      this.modalSaving = false;
+      // leave modal open so the user can correct things
+      alert('Could not save candidate. Please try again.');
     };
 
-    this.modalSaving = true;
-    this.data.saveCandidateWithRules(payload).subscribe(
-      () => {
-        this.modalSaving = false;
-        this.modalOpen = false;        // close on success
-        if (formRef && formRef.resetForm) { formRef.resetForm(); }
-      },
-      () => {
-        this.modalSaving = false;      // allow closing if error
-      }
-    );
+    if (this.modalMode === 'add') {
+      this.data.addCandidate(payload).subscribe({ next: done, error: fail });
+    } else {
+      this.data.updateCandidate(payload as Candidate).subscribe({ next: done, error: fail });
+    }
   }
 
-  confirmDelete(row: Candidate): void { if (window.confirm('Delete this candidate?')) { this.delete(row); } }
-  delete(row: Candidate): void {
-    this.modalSaving = true;
-    this.data.deleteCandidate(Number(row.id)).subscribe(
-      () => { this.modalSaving = false; this.data.refreshAll().subscribe(); },
-      () => { this.modalSaving = false; }
-    );
+  delete(row: ViewCandidate): void {
+    if (!row || row.id == null) return;
+    if (!confirm('Delete this candidate?')) return;
+    this.data.deleteCandidate(Number(row.id)).subscribe();
+  }
+
+  trackById(_: number, row: ViewCandidate): number {
+    return Number(row.id);
   }
 }

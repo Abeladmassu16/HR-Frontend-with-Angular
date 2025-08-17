@@ -39,7 +39,10 @@ import { TiltCardDirective } from './directives/tilt-card.directive';
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule, HttpClientModule,
-    HttpClientInMemoryWebApiModule.forRoot(InMemoryDataService, { delay: 300 }),
+    HttpClientInMemoryWebApiModule.forRoot(InMemoryDataService, { delay: 300,
+      dataEncapsulation: false,
+      passThruUnknownUrl: false
+    }),
     FormsModule, ReactiveFormsModule,
     MaterialModule,
     AppRoutingModule
