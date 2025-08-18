@@ -104,7 +104,7 @@
 .row.header{
   display:grid; grid-template-columns: 1fr auto 44px; align-items:center; gap:18px; margin-bottom:16px;
 }
-.title{ font-size:32px; font-weight:700; letter-spacing:.2px; }
+.title{ font-size:32px; font-weight:700; letter-spacing:.2px; color: #289581;}
 .tabs{ display:flex; align-items:center; gap:26px; }
 .tab{
   background:transparent; border:none; cursor:pointer; font-weight:700; color:#f5fffb; /* ↑ contrast on dark bg */
