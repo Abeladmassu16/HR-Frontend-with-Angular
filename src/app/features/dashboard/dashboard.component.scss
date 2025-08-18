@@ -971,3 +971,118 @@
   .btn-add-employee { left: 14px; }
   .btn-hire         { right: 14px; }
 }
+
+
+/* ===== Schedule modal styling – scoped to Dashboard ===== */
+
+/* Dimmed / minty glass backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  /* light mint tint + blur */
+  background:
+    radial-gradient(1200px 600px at 70% 10%, rgba(83, 208, 183, .20), transparent 60%),
+    radial-gradient(1000px 500px at 10% 80%, rgba(12, 59, 54, .12), transparent 55%),
+    rgba(8, 27, 24, .25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* The glass card itself */
+.modal {
+  width: min(720px, 92vw);
+  border-radius: 18px;
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, .22);
+  border: 1px solid rgba(255, 255, 255, .45);
+  box-shadow:
+    0 28px 80px rgba(13, 18, 25, .22),
+    0 10px 30px rgba(13, 18, 25, .14),
+    inset 0 1px 0 rgba(255, 255, 255, .65);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+}
+
+/* Header / title */
+.modal-head {
+  padding: 18px 22px 6px 22px;
+}
+.modal-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: .2px;
+  color: #0a2d2a;
+}
+
+/* Body / form rows */
+.modal-body {
+  padding: 8px 22px 20px 22px;
+}
+.form-row {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.modal-body label {
+  font-weight: 800;
+  opacity: .85;
+}
+
+/* Input field */
+.field {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  background: rgba(255, 255, 255, .82);
+  font-size: 14.5px;
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.field:focus {
+  border-color: rgba(65, 197, 171, .9);
+  box-shadow: 0 0 0 3px rgba(65, 197, 171, .18);
+}
+
+/* Actions */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+/* Buttons (match the rest of your app) */
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255,255,255,.75);
+}
+.btn:hover { filter: brightness(0.98); }
+
+.btn.mint {
+  color: #0b2e27;
+  background: linear-gradient(90deg, #33c0a5, #6ad7c3);
+}
+.btn.sky {
+  color: #0a2a44;
+  background: linear-gradient(90deg, #99c7ff, #c8dcff);
+}
+
+/* Small screen polish */
+@media (max-width: 560px) {
+  .modal { width: 96vw; }
+  .modal-body { padding: 8px 16px 16px; }
+}
