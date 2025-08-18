@@ -126,16 +126,17 @@ export class CandidatesComponent implements OnInit, OnDestroy {
   }
 
   openEdit(row: ViewCandidate): void {
-    this.modalMode = 'edit';
-    this.formCandidate = {
-      id: row.id,
-      name: row.name || '',
-      email: row.email || '',
-      status: row.status || 'Applied',
-      departmentId: (row as any).departmentId,
-    } as Partial<Candidate>;
-    this.modalOpen = true;
-  }
+  this.modalMode = 'edit';
+  this.formCandidate = {
+    id: Number(row.id),           // ensure numeric
+    name: row.name || '',
+    email: row.email || '',
+    status: row.status || 'Applied',
+    departmentId: (row as any).departmentId
+  };
+  this.modalOpen = true;
+}
+
 
   closeModal(): void {
     this.modalOpen = false;
@@ -144,30 +145,24 @@ export class CandidatesComponent implements OnInit, OnDestroy {
 
   /** Strong submit path; called from (ngSubmit) and button (click) */
   saveForm(): void {
-    if (this.modalSaving) return;
-    this.modalSaving = true;
+  if (this.modalSaving) return;
+  this.modalSaving = true;
 
-    const payload: Partial<Candidate> = { ...this.formCandidate };
+  const payload: Partial<Candidate> = { ...this.formCandidate };
+  if (payload.name) payload.name = String(payload.name).trim();
+  if (payload.email) payload.email = String(payload.email).trim();
 
-    if (payload.name) payload.name = String(payload.name).trim();
-    if (payload.email) payload.email = String(payload.email).trim();
+  const done = () => { this.modalSaving = false; this.closeModal(); };
+  const fail = () => { this.modalSaving = false; alert('Could not save candidate. Please try again.'); };
 
-    const done = () => {
-      this.modalSaving = false;
-      this.closeModal();
-    };
-    const fail = () => {
-      this.modalSaving = false;
-      // leave modal open so the user can correct things
-      alert('Could not save candidate. Please try again.');
-    };
-
-    if (this.modalMode === 'add') {
-      this.data.addCandidate(payload).subscribe({ next: done, error: fail });
-    } else {
-      this.data.updateCandidate(payload as Candidate).subscribe({ next: done, error: fail });
-    }
+  if (this.modalMode === 'add') {
+    this.data.addCandidate(payload).subscribe({ next: done, error: fail });
+  } else {
+    // IMPORTANT: id must be present and numeric
+    this.data.updateCandidate(payload as Candidate & { id: number }).subscribe({ next: done, error: fail });
   }
+}
+
 
   delete(row: ViewCandidate): void {
     if (!row || row.id == null) return;
