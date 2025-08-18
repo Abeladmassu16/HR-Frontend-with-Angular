@@ -1,53 +1,63 @@
-import { BrowserModule } from '@angular/platform-browser';
+// src/app/app.module.ts
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
-import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { AppComponent } from './app.component';
-import { AppRoutingModule } from './app-routing.module';
-import { MaterialModule } from './material.module';
-import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+// Angular In-Memory Web API (dev/mock backend)
+import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
 import { InMemoryDataService } from './in-memory-data.service';
 
+// App shell & routing
+import { AppComponent } from './app.component';
+import { AppRoutingModule } from './app-routing.module';
 
-// Features
-import { DepartmentsComponent } from './features/departments/departments.component';
-import { EmployeesComponent } from './features/employees/employees.component';
-import { EmployeeDialogComponent } from './features/employees/employee-dialog.component';
-import { CompaniesComponent } from './features/companies/companies.component';
-import { CompanyDialogComponent } from './features/companies/company-dialog.component';
-import { CandidatesComponent } from './features/candidates/candidates.component';
-import { CandidateDialogComponent } from './features/candidates/candidate-dialog.component';
+// Angular Material barrel (your local module that imports/exports Mat* modules)
+import { MaterialModule } from './material.module';
+
+// Feature components
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { EmployeesComponent } from './features/employees/employees.component';
+import { CandidatesComponent } from './features/candidates/candidates.component';
+import { CompaniesComponent } from './features/companies/companies.component';
+import { DepartmentsComponent } from './features/departments/departments.component';
 
-// Directives
-import { ElevateOnHoverDirective } from './directives/elevate-on-hover.directive';
-import { TiltCardDirective } from './directives/tilt-card.directive';
+// Salaries (new, Material-based)
+import { SalariesComponent } from './features/salaries/salaries.component';
+import { SalaryDialogComponent } from './features/salaries/salary-dialog.component';
 
 @NgModule({
-    providers: [
-    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } }
-],
   declarations: [
     AppComponent,
-    DepartmentsComponent, EmployeesComponent, EmployeeDialogComponent,
-    CompaniesComponent, CompanyDialogComponent,
-    CandidatesComponent, CandidateDialogComponent,
-    ElevateOnHoverDirective, TiltCardDirective, DashboardComponent
+    // features
+    DashboardComponent,
+    EmployeesComponent,
+    CandidatesComponent,
+    CompaniesComponent,
+    DepartmentsComponent,
+    // salaries
+    SalariesComponent,
+    SalaryDialogComponent
   ],
   imports: [
-    BrowserModule, BrowserAnimationsModule, HttpClientModule,
-    HttpClientInMemoryWebApiModule.forRoot(InMemoryDataService, { delay: 300,
-      dataEncapsulation: false,
-      passThruUnknownUrl: false
-    }),
-    FormsModule, ReactiveFormsModule,
+    BrowserModule,
+    BrowserAnimationsModule,
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule,
     MaterialModule,
-    AppRoutingModule
+    AppRoutingModule,
+
+    // NOTE: keep this after HttpClientModule; leave it ON during development.
+    // If you later connect a real backend, remove this line.
+    HttpClientInMemoryWebApiModule.forRoot(InMemoryDataService, {
+      dataEncapsulation: false,
+      delay: 300
+    })
   ],
-  entryComponents: [EmployeeDialogComponent, CompanyDialogComponent, CandidateDialogComponent],
+  // Required for Angular 8 when opening MatDialog components dynamically
+  entryComponents: [SalaryDialogComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

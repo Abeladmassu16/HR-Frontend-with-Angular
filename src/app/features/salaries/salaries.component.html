@@ -1,0 +1,86 @@
+<div class="page-wrap">
+  <div class="page-shell">
+    <div class="head-row">
+      <h2 class="title">Salaries</h2>
+
+      <div class="actions">
+        <input class="search" type="text" placeholder="Search salaries" (input)="onSearch($event.target.value)" />
+        <button class="btn mint" type="button" (click)="openAdd()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="table glassy">
+      <div class="thead row">
+        <div class="th">ID</div>
+        <div class="th">Employee</div>
+        <div class="th">Amount</div>
+        <div class="th">Currency</div>
+        <div class="th">Effective</div>
+        <div class="th right">Actions</div>
+      </div>
+
+      <ng-container *ngIf="rows && rows.length; else emptyState">
+        <div class="row tr" *ngFor="let r of rows; trackBy: trackById">
+          <div class="td">{{ r.id }}</div>
+          <div class="td">{{ r.employeeName || '—' }}</div>
+          <div class="td">{{ r.amount | number:'1.0-0' }}</div>
+          <div class="td">{{ r.currency || '—' }}</div>
+          <div class="td">{{ r.effectiveDate || '—' }}</div>
+          <div class="td right">
+            <button class="icon-pill primary" type="button" (click)="openEdit(r)">✏️</button>
+            <button class="icon-pill danger" type="button" (click)="delete(r)">🗑️</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <div class="row">
+          <div class="td" style="grid-column:1 / -1; opacity:.7; padding:16px;">
+            No salaries found.
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="formOpen" (click)="closeForm()">
+  <div class="modal glassy salaries-modal" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <h3 class="modal-title">{{ formMode === 'add' ? 'Add Salary' : 'Edit Salary' }}</h3>
+    </div>
+
+    <form class="modal-body" (ngSubmit)="saveSalary()">
+      <div class="form-row">
+        <label>Employee</label>
+        <select class="field" name="employeeId" [(ngModel)]="formSalary.employeeId" required>
+          <option [ngValue]="undefined" disabled>Choose an employee</option>
+          <option *ngFor="let e of employees" [ngValue]="e.id">
+            {{ employeeLabel(e) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Amount</label>
+        <input class="field" type="number" name="amount" [(ngModel)]="formSalary.amount" min="0" required />
+      </div>
+
+      <div class="form-row">
+        <label>Currency</label>
+        <input class="field" type="text" name="currency" [(ngModel)]="formSalary.currency" maxlength="3" placeholder="USD" />
+      </div>
+
+      <div class="form-row">
+        <label>Effective Date</label>
+        <input class="field" type="date" name="effectiveDate" [(ngModel)]="formSalary.effectiveDate" />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn" (click)="closeForm()">Cancel</button>
+        <button type="submit" class="btn mint">{{ formMode === 'add' ? 'Create' : 'Save' }}</button>
+      </div>
+    </form>
+  </div>
+</div>

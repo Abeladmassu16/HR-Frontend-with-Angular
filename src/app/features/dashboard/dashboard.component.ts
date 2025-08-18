@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-type RouteKey = 'employees' | 'departments' | 'companies' | 'candidates';
+type RouteKey = 'employees' | 'departments' | 'companies' | 'candidates' | 'salaries';
 
 interface Metric { count: number; delta: number; }
 interface Stats {
@@ -14,32 +14,33 @@ interface Stats {
   candidates:  Metric;
 }
 
-/** Your base candidate shape + a few optional fields we need for scheduling */
-interface Candidate {
-  id?: number;
+interface CandidateItem {
   name: string;
   status: string;
   email?: string;
   department?: string;
-  departmentId?: number;
-  /** ISO date string we save when user schedules */
-  interviewDate?: string;
 }
 
-interface UpcomingRow {
-  id: number;
-  displayName: string;
+interface InterviewItem {
+  candidate: string;
+  when?: string;   // ISO string
   email?: string;
-  department?: string;
-  when?: string;          // ISO string (if scheduled)
-  raw: any;               // original record we will PUT back with interviewDate
+}
+
+interface SalaryItem {
+  id: number;
+  employeeId: number;
+  amount: number;
+  currency: string;
+  effectiveDate: string;
 }
 
 const API = {
   employees:   '/api/employees',
   departments: '/api/departments',
   companies:   '/api/companies',
-  candidates:  '/api/candidates'
+  candidates:  '/api/candidates',
+  salaries:    '/api/salaries'
 };
 
 @Component({
@@ -49,7 +50,13 @@ const API = {
 })
 export class DashboardComponent implements OnInit {
 
-  // ---------- existing stats ----------
+  // ---- Theme toggle (kept) ----
+  theme: 'mint' | 'white' = 'mint';
+  onToggleChange(e: any) {
+    this.theme = e && e.target && e.target.checked ? 'mint' : 'white';
+  }
+
+  // ---- Stats tiles ----
   stats: Stats = {
     employees:   { count: 0, delta: 0 },
     departments: { count: 0, delta: 0 },
@@ -57,16 +64,21 @@ export class DashboardComponent implements OnInit {
     candidates:  { count: 0, delta: 0 }
   };
 
-  /** your table on the left */
-  recentCandidates: Candidate[] = [];
+  // NEW: Payroll KPI
+  payrollTotal = 0;
+  payrollRecs  = 0;
+  payrollCurrency = 'USD';
 
-  /** NEW: rows for Upcoming Interviews (right card) */
-  upcoming: UpcomingRow[] = [];
+  // Recent candidates table
+  recentCandidates: CandidateItem[] = [];
 
-  /** NEW: scheduling modal state */
+  // Upcoming interviews panel
+  upcoming: InterviewItem[] = [];
+
+  // ---- Schedule modal state (kept) ----
   scheduleModalOpen = false;
-  scheduleTarget: UpcomingRow | null = null;
-  scheduleDate = ''; // bound to <input type="datetime-local">
+  scheduleEditingIndex: number | null = null;
+  scheduleForm: { candidate: string; when: string } = { candidate: '', when: '' };
 
   constructor(private router: Router, private http: HttpClient) {}
 
@@ -74,46 +86,59 @@ export class DashboardComponent implements OnInit {
     this.loadStatsAndCandidates();
   }
 
-  /* ---------------- Fetch counts + candidate list ---------------- */
-
+  // ================================================================
+  // Fetch counts + candidate list + salaries (NEW)
+  // ================================================================
   private loadStatsAndCandidates(): void {
     forkJoin([
-      this.http.get<any>(API.employees).pipe(catchError(_ => of([]))),
-      this.http.get<any>(API.departments).pipe(catchError(_ => of([]))),
-      this.http.get<any>(API.companies).pipe(catchError(_ => of([]))),
-      this.http.get<any>(API.candidates).pipe(catchError(_ => of([])))
-    ]).subscribe(([empsRaw, deptsRaw, compsRaw, candsRaw]) => {
-      const emps  = this.asArray(empsRaw);
-      const depts = this.asArray(deptsRaw);
-      const comps = this.asArray(compsRaw);
-      const cands = this.asArray(candsRaw);
+      this.http.get<any>(API.employees).pipe(catchError(() => of([]))),
+      this.http.get<any>(API.departments).pipe(catchError(() => of([]))),
+      this.http.get<any>(API.companies).pipe(catchError(() => of([]))),
+      this.http.get<any>(API.candidates).pipe(catchError(() => of([]))),
+      this.http.get<any>(API.salaries).pipe(catchError(() => of([])))
+    ]).subscribe(
+      (res: any[]) => {
+        const emps  = this.asArray(res[0]);
+        const depts = this.asArray(res[1]);
+        const comps = this.asArray(res[2]);
+        const cands = this.asArray(res[3]);
+        const sals  = this.asArray(res[4]) as SalaryItem[];
 
-      // counts
-      this.stats.employees.count   = emps.length;
-      this.stats.departments.count = depts.length;
-      this.stats.companies.count   = comps.length;
-      this.stats.candidates.count  = cands.length;
+        // counts
+        this.stats.employees.count   = emps.length;
+        this.stats.departments.count = depts.length;
+        this.stats.companies.count   = comps.length;
+        this.stats.candidates.count  = cands.length;
 
-      // deltas (vs previous snapshot)
-      const prev = this.readPrevSnapshot();
-      this.stats.employees.delta   = this.delta(prev.employees,   this.stats.employees.count);
-      this.stats.departments.delta = this.delta(prev.departments, this.stats.departments.count);
-      this.stats.companies.delta   = this.delta(prev.companies,   this.stats.companies.count);
-      this.stats.candidates.delta  = this.delta(prev.candidates,  this.stats.candidates.count);
+        // deltas (vs previous snapshot)
+        const prev = this.readPrevSnapshot();
+        this.stats.employees.delta   = this.delta(prev.employees,   this.stats.employees.count);
+        this.stats.departments.delta = this.delta(prev.departments, this.stats.departments.count);
+        this.stats.companies.delta   = this.delta(prev.companies,   this.stats.companies.count);
+        this.stats.candidates.delta  = this.delta(prev.candidates,  this.stats.candidates.count);
 
-      // candidate list for the dashboard table (left)
-      const normalized = this.normalizeCandidates(cands);
-      this.recentCandidates = normalized.slice(0, 5);
+        // candidate list for the dashboard table
+        const normalized = this.normalizeCandidates(cands);
+        this.recentCandidates = normalized.slice(0, 5);
 
-      // NEW: compute upcoming (right)
-      this.buildUpcoming(cands);
+        // Build upcoming list from Interview candidates + saved times
+        this.buildUpcomingFromCandidates(normalized);
 
-      // save current snapshot
-      this.writeSnapshot();
-    }, _err => {
-      // Fallback to localStorage if requests failed
-      this.hydrateFromLocalStorage();
-    });
+        // NEW: payroll KPI
+        this.payrollRecs  = sals.length;
+        this.payrollTotal = sals.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+        if (sals.length && sals[0].currency) {
+          this.payrollCurrency = String(sals[0].currency);
+        }
+
+        // save current snapshot
+        this.writeSnapshot();
+      },
+      _err => {
+        // Fallback to localStorage if requests failed
+        this.hydrateFromLocalStorage();
+      }
+    );
   }
 
   // Accepts array or shapes like { data: [...] } or { items: [...] }
@@ -124,10 +149,10 @@ export class DashboardComponent implements OnInit {
     return [];
   }
 
-  private normalizeCandidates(list: any[]): Candidate[] {
-    const out: Candidate[] = [];
+  private normalizeCandidates(list: any[]): CandidateItem[] {
+    const out: CandidateItem[] = [];
     for (let i = 0; i < list.length; i++) {
-      const r = list[i] || {};
+      const r: any = list[i] || {};
 
       const first = r.firstName ? String(r.firstName) : '';
       const last  = r.lastName  ? String(r.lastName)  : '';
@@ -147,77 +172,52 @@ export class DashboardComponent implements OnInit {
       else if (r.state) status = String(r.state);
 
       out.push({
-        id: isFinite(Number(r.id)) ? Number(r.id) : undefined,
         name,
         status,
         email: r.email || r.mail || r.contactEmail || '',
-        department: r.department || r.team || '',
-        departmentId: isFinite(Number(r.departmentId)) ? Number(r.departmentId) : undefined,
-        interviewDate: r.interviewDate
+        department: r.department || r.team || ''
       });
     }
     return out;
   }
 
-  /** NEW: build upcoming interviews list from raw candidates */
-  private buildUpcoming(candsRaw: any[]): void {
-    const rows: UpcomingRow[] = [];
-    for (let i = 0; i < (candsRaw || []).length; i++) {
-      const r = candsRaw[i] || {};
-      const status = String(r.status || r.phase || r.stage || r.state || '').toLowerCase();
-      if (status !== 'interview') continue;
+  // ================================================================
+  // Build Upcoming Interviews from Interview candidates + LS
+  // ================================================================
+  private buildUpcomingFromCandidates(cands: CandidateItem[]): void {
+    const stored = this.loadInterviewsLS();          // InterviewItem[]
+    const items: InterviewItem[] = [];
 
-      const displayName = this.bestName(r);
-      rows.push({
-        id: Number(r.id),
-        displayName,
-        email: r.email || r.mail || r.contactEmail || '',
-        department: r.department || r.team || '',
-        when: r.interviewDate, // may be undefined if not scheduled
-        raw: r
-      });
+    for (let i = 0; i < cands.length; i++) {
+      const c: CandidateItem = cands[i];
+
+      const status = (c && c.status ? String(c.status) : '').toLowerCase();
+      if (status === 'interview') {
+        const match = stored.find(s => s.candidate === (c.name || ''));
+        const when = match ? (match.when || '') : '';
+        items.push({ candidate: c.name || '—', when, email: c.email || '' });
+      }
     }
-    // sort by soonest if there is a date
-    rows.sort((a, b) => {
-      const ta = a.when ? new Date(a.when).getTime() : Number.MAX_SAFE_INTEGER;
-      const tb = b.when ? new Date(b.when).getTime() : Number.MAX_SAFE_INTEGER;
-      return ta - tb;
-    });
-    this.upcoming = rows;
+
+    this.upcoming = items;
   }
 
-  private bestName(r: any): string {
-    const safe = (x: any) => (x == null ? '' : String(x));
-    const name = safe(r.name).trim();
-    if (name) return name;
-
-    const first = safe(r.firstName).trim();
-    const last = safe(r.lastName).trim();
-    const full = (first + ' ' + last).trim();
-    if (full) return full;
-
-    const fn = safe(r.fullName).trim();
-    if (fn) return fn;
-
-    const user = safe(r.username).trim();
-    if (user) return user;
-
-    const email = safe(r.email || r.mail || r.contactEmail).trim();
-    if (email) {
-      const part = (email.split('@')[0] || '')
-        .split(/[._-]/g)
-        .filter(Boolean)
-        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-      return part || email;
-    }
-    return '—';
+  private loadInterviewsLS(): InterviewItem[] {
+    try {
+      const raw = localStorage.getItem('interviews');
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (_e) { return []; }
+  }
+  private saveInterviewsLS(list: InterviewItem[]): void {
+    try { localStorage.setItem('interviews', JSON.stringify(list)); } catch (_e) {}
   }
 
-  /* ---------------- Navigation for clickable cards ---------------- */
-
+  // ================================================================
+  // Navigation helpers for KPI tiles
+  // ================================================================
   goTo(route: RouteKey): void {
-    this.router.navigate(['/', route]).then(function () {
+    this.router.navigate(['/', route]).then(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
@@ -226,84 +226,97 @@ export class DashboardComponent implements OnInit {
     this.goTo(route);
   }
 
-  /* ---------------- Inner buttons ---------------- */
-
+  // Optional CTAs used in your tiles (kept)
   openAddEmployee(): void {
-    this.router.navigate(['/employees'], { queryParams: { add: '1' } }).then(function () {
+    this.router.navigate(['/employees'], { queryParams: { add: '1' } }).then(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
   openHire(): void {
-    this.router.navigate(['/candidates'], { queryParams: { add: '1' } }).then(function () {
+    this.router.navigate(['/candidates'], { queryParams: { add: '1' } }).then(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
-  /* ---------------- Upcoming: actions ---------------- */
+  // ================================================================
+  // Schedule modal actions (kept)
+  // ================================================================
+  openScheduleFor(item: InterviewItem, index: number): void {
+    this.scheduleEditingIndex = index;
+    this.scheduleForm.candidate = item && item.candidate ? item.candidate : '';
 
-  /** From list row */
-  schedule(row: UpcomingRow): void {
-    this.scheduleTarget = row;
-    this.scheduleDate = row.when ? this.toLocalInputValue(row.when) : '';
+    const iso = item && item.when ? String(item.when) : '';
+    if (iso) {
+      const d = new Date(iso);
+      const yyyy = d.getFullYear();
+      const mm = ('0' + (d.getMonth() + 1)).slice(-2);
+      const dd = ('0' + d.getDate()).slice(-2);
+      const hh = ('0' + d.getHours()).slice(-2);
+      const mi = ('0' + d.getMinutes()).slice(-2);
+      this.scheduleForm.when = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+    } else {
+      this.scheduleForm.when = '';
+    }
+
     this.scheduleModalOpen = true;
   }
 
-  /** Footer CTA: open empty modal (no candidate selected) */
-  openSchedule(): void {
-    this.scheduleTarget = null;
-    this.scheduleDate = '';
+  openScheduleNew(): void {
+    this.scheduleEditingIndex = null;
+    this.scheduleForm = { candidate: '', when: '' };
     this.scheduleModalOpen = true;
-  }
-
-  email(row: UpcomingRow): void {
-    const to = row.email || '';
-    const sub = encodeURIComponent('Interview schedule');
-    const body = encodeURIComponent(
-      `Hi ${row.displayName},\n\nLet's schedule your interview.${row.when ? `\nCurrent time: ${new Date(row.when).toLocaleString()}` : ''}\n\nThanks!`
-    );
-    window.location.href = `mailto:${to}?subject=${sub}&body=${body}`;
   }
 
   closeScheduleModal(): void {
     this.scheduleModalOpen = false;
-    this.scheduleTarget = null;
-    this.scheduleDate = '';
   }
 
-  saveScheduleModal(): void {
-    if (!this.scheduleTarget || !this.scheduleDate) return;
-    const iso = new Date(this.scheduleDate).toISOString();
+  saveSchedule(): void {
+    const form = this.scheduleForm || { candidate: '', when: '' };
+    const name = (form.candidate || '').trim();
+    const whenVal = (form.when || '').trim();
 
-    // merge and PUT back to the in-memory API
-    const updated = { ...(this.scheduleTarget.raw || {}), interviewDate: iso };
+    if (!name) { alert('Candidate is required.'); return; }
+    if (!whenVal) { alert('Please pick date & time.'); return; }
 
-    this.http.put(`${API.candidates}/${this.scheduleTarget.id}`, updated)
-      .pipe(catchError(_ => of(null)))
-      .subscribe((_ok) => {
-        // refresh and close
-        this.loadStatsAndCandidates();
-        this.closeScheduleModal();
-      }, _err => {
-        alert('Could not save schedule. Please try again.');
-        this.closeScheduleModal();
-      });
+    const iso = new Date(whenVal).toISOString();
+
+    const list: InterviewItem[] = Array.isArray(this.upcoming) ? this.upcoming.slice() : [];
+
+    if (this.scheduleEditingIndex !== null &&
+        this.scheduleEditingIndex > -1 &&
+        this.scheduleEditingIndex < list.length) {
+      list[this.scheduleEditingIndex] = {
+        candidate: name,
+        when: iso,
+        email: list[this.scheduleEditingIndex].email || ''
+      };
+    } else {
+      const existing = list.find(i => i.candidate === name);
+      if (existing) existing.when = iso;
+      else list.push({ candidate: name, when: iso });
+    }
+
+    this.upcoming = list;
+    this.saveInterviewsLS(list);
+    this.scheduleModalOpen = false;
   }
 
-  // helper for datetime-local value
-  private toLocalInputValue(dateLike: any): string {
-    const d = new Date(dateLike);
-    if (isNaN(d.getTime())) return '';
-    const pad = (n: number) => (n < 10 ? '0' + n : '' + n);
-    const y = d.getFullYear();
-    const m = pad(d.getMonth() + 1);
-    const day = pad(d.getDate());
-    const h = pad(d.getHours());
-    const mm = pad(d.getMinutes());
-    return `${y}-${m}-${day}T${h}:${mm}`;
+  email(u: InterviewItem): void {
+    const to = u && u.email ? u.email : '';
+    const sub = encodeURIComponent('Interview Schedule');
+    const body = encodeURIComponent(
+      'Hi ' + (u && u.candidate ? u.candidate : '') +
+      ',\n\nYour interview is scheduled for ' +
+      (u && u.when ? new Date(u.when).toLocaleString() : '(TBD)') +
+      '.\n\nThanks.'
+    );
+    window.location.href = 'mailto:' + to + '?subject=' + sub + '&body=' + body;
   }
 
-  /* ---------------- Delta + snapshot helpers ---------------- */
-
+  // ================================================================
+  // Delta + snapshot helpers (kept)
+  // ================================================================
   private delta(prevCount: number, currCount: number): number {
     const p = Number(prevCount);
     const c = Number(currCount);
@@ -343,6 +356,7 @@ export class DashboardComponent implements OnInit {
     const departments = this.safeParseArray(localStorage.getItem('departments'));
     const companies   = this.safeParseArray(localStorage.getItem('companies'));
     const candidates  = this.safeParseArray(localStorage.getItem('candidates'));
+    const salaries    = this.safeParseArray(localStorage.getItem('salaries')) as SalaryItem[];
 
     this.stats.employees.count   = employees.length;
     this.stats.departments.count = departments.length;
@@ -356,9 +370,14 @@ export class DashboardComponent implements OnInit {
     this.stats.candidates.delta  = this.delta(prev.candidates,  this.stats.candidates.count);
 
     this.recentCandidates = this.normalizeCandidates(candidates).slice(0, 5);
+    this.buildUpcomingFromCandidates(this.recentCandidates);
 
-    // NEW: build upcoming from the locally-cached array too
-    this.buildUpcoming(candidates);
+    // payroll from LS
+    this.payrollRecs  = salaries.length;
+    this.payrollTotal = salaries.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    if (salaries.length && salaries[0].currency) {
+      this.payrollCurrency = String(salaries[0].currency);
+    }
 
     this.writeSnapshot();
   }

@@ -1,131 +1,84 @@
-<!-- Dashboard Canvas -->
-<div class="canvas">
-  <div class="frame has-theme-toggle">
-
-    <!-- Small theme toggle pinned under navbar (top-right) -->
-    <div class="theme-toggle-floating">
-      <input
-        id="themeToggle"
-        class="sr-only"
-        type="checkbox"
-        [checked]="theme === 'mint'"
-        (change)="onToggleChange($event)"
-        aria-label="Toggle theme between Mint and White" />
-      <label for="themeToggle" class="switch sm" role="switch" [attr.aria-checked]="theme === 'mint'">
-        <span class="track">
-          <span class="label left">White</span>
-          <span class="label right">Mint</span>
-        </span>
-        <span class="knob"></span>
-      </label>
-    </div>
+<div class="page-wrap">
+  <div class="page-shell">
 
     <!-- Page Title -->
     <div class="row header">
       <h1 class="title">Welcome back Here’s what’s happening today</h1>
     </div>
 
-    <!-- 🎉 confetti backdrop just for fun -->
-    <div class="confetti"></div>
-
-    <!-- ===== Top Row: Welcome + 4 KPI tiles ===== -->
+    <!-- KPI Row -->
     <div class="hero-wrap">
       <!-- Employees -->
-      <div
-        class="stat-card glassy kpi kpi-emp clickable"
-        role="button"
-        tabindex="0"
-        aria-label="Open Employees"
-        (click)="goTo('employees')"
-        (keydown.enter)="goTo('employees')"
-        (keydown.space)="goToSpace($event, 'employees')">
-
+      <div class="stat-card glassy kpi kpi-emp clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open Employees"
+           (click)="goTo('employees')"
+           (keydown.enter)="goTo('employees')"
+           (keydown.space)="goToSpace($event, 'employees')">
         <div class="stat-num">{{ stats.employees.count }}</div>
         <div class="stat-label">Employees</div>
-
-        <div class="chip chip-up" *ngIf="stats.employees.delta >= 0">
-          <span class="icon">⬆</span>{{ stats.employees.delta }}%
-        </div>
-        <div class="chip chip-down" *ngIf="stats.employees.delta < 0">
-          <span class="icon">⬇</span>{{ stats.employees.delta | number:'1.0-0' }}%
-        </div>
-
-        <!-- Optional: Add button INSIDE the card -->
-        <button
-          type="button"
-          class="btn add-btn"
-          aria-label="Add employee"
-          (click)="$event.stopPropagation(); openAddEmployee()">+
-        </button>
+        <div class="chip chip-up" *ngIf="stats.employees.delta >= 0"><span class="icon">⬆</span>{{ stats.employees.delta }}%</div>
+        <div class="chip chip-down" *ngIf="stats.employees.delta < 0"><span class="icon">⬇</span>{{ stats.employees.delta }}%</div>
       </div>
 
       <!-- Departments -->
-      <div
-        class="stat-card glassy kpi kpi-dept clickable"
-        role="button"
-        tabindex="0"
-        aria-label="Open Departments"
-        (click)="goTo('departments')"
-        (keydown.enter)="goTo('departments')"
-        (keydown.space)="goToSpace($event, 'departments')">
-
+      <div class="stat-card glassy kpi kpi-dept clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open Departments"
+           (click)="goTo('departments')"
+           (keydown.enter)="goTo('departments')"
+           (keydown.space)="goToSpace($event, 'departments')">
         <div class="stat-num">{{ stats.departments.count }}</div>
         <div class="stat-label">Departments</div>
         <div class="mini-line"></div>
       </div>
 
       <!-- Companies -->
-      <div
-        class="stat-card glassy kpi kpi-comp clickable"
-        role="button"
-        tabindex="0"
-        aria-label="Open Companies"
-        (click)="goTo('companies')"
-        (keydown.enter)="goTo('companies')"
-        (keydown.space)="goToSpace($event, 'companies')">
-
+      <div class="stat-card glassy kpi kpi-comp clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open Companies"
+           (click)="goTo('companies')"
+           (keydown.enter)="goTo('companies')"
+           (keydown.space)="goToSpace($event, 'companies')">
         <div class="stat-num">{{ stats.companies.count }}</div>
         <div class="stat-label">Companies</div>
-
-        <div class="chip chip-up" *ngIf="stats.companies.delta >= 0">
-          <span class="icon">⬆</span>{{ stats.companies.delta }}%
-        </div>
-        <div class="chip chip-down" *ngIf="stats.companies.delta < 0">
-          <span class="icon">⬇</span>{{ stats.companies.delta | number:'1.0-0' }}%
-        </div>
+        <div class="chip chip-up" *ngIf="stats.companies.delta >= 0"><span class="icon">⬆</span>{{ stats.companies.delta }}%</div>
+        <div class="chip chip-down" *ngIf="stats.companies.delta < 0"><span class="icon">⬇</span>{{ stats.companies.delta }}%</div>
       </div>
 
       <!-- Candidates -->
-      <div
-        class="stat-card glassy kpi kpi-cand clickable"
-        role="button"
-        tabindex="0"
-        aria-label="Open Candidates"
-        (click)="goTo('candidates')"
-        (keydown.enter)="goTo('candidates')"
-        (keydown.space)="goToSpace($event, 'candidates')">
-
+      <div class="stat-card glassy kpi kpi-cand clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open Candidates"
+           (click)="goTo('candidates')"
+           (keydown.enter)="goTo('candidates')"
+           (keydown.space)="goToSpace($event, 'candidates')">
         <div class="stat-num">{{ stats.candidates.count }}</div>
         <div class="stat-label">Candidates</div>
+        <div class="chip chip-up" *ngIf="stats.candidates.delta >= 0"><span class="icon">⬆</span>{{ stats.candidates.delta }}%</div>
+        <div class="chip chip-down" *ngIf="stats.candidates.delta < 0"><span class="icon">⬇</span>{{ stats.candidates.delta }}%</div>
+      </div>
 
-        <div class="chip chip-up" *ngIf="stats.candidates.delta >= 0">
-          <span class="icon">⬆</span>{{ stats.candidates.delta }}%
-        </div>
-        <div class="chip chip-down" *ngIf="stats.candidates.delta < 0">
-          <span class="icon">⬇</span>{{ stats.candidates.delta | number:'1.0-0' }}%
-        </div>
-
-        <!-- Keep Hire inside the card; stop propagation so card doesn't navigate -->
-        <button
-          class="btn hire-btn"
-          type="button"
-          (click)="$event.stopPropagation(); openHire()">
-          Hire
-        </button>
+      <!-- NEW: Payroll/Salaries -->
+      <div class="stat-card glassy kpi kpi-pay clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open Salaries"
+           (click)="goTo('salaries')"
+           (keydown.enter)="goTo('salaries')"
+           (keydown.space)="goToSpace($event, 'salaries')">
+        <div class="stat-num">{{ payrollTotal | number:'1.0-0' }}</div>
+        <div class="stat-sub">{{ payrollCurrency }}</div>
+        <div class="stat-label">Payroll</div>
+        <div class="chip chip-flat">💳 {{ payrollRecs }} recs</div>
       </div>
     </div>
 
-    <!-- ===== Second Row: Recent Candidates (left) + Upcoming Interviews (right) ===== -->
+    <!-- Main content: Recent Candidates + Upcoming Interviews -->
     <div class="split-panels">
       <!-- Recent Candidates -->
       <section class="panel glassy">
@@ -147,7 +100,7 @@
                     [ngClass]="{
                       'badge-applied':  c.status === 'Applied',
                       'badge-interview':c.status === 'Interview',
-                      'badge-hired':    c.status === 'Hired', 
+                      'badge-hired':    c.status === 'Hired',
                       'badge-rejected': c.status === 'Rejected'
                     }">
                 {{ c.status }}
@@ -165,60 +118,53 @@
           <button class="icon-btn" aria-label="menu"><span class="material-icons">menu</span></button>
         </div>
 
-        <!-- Group header -->
         <div class="sub-card glassy-lite">
           <div class="sub-grid">
             <div class="muted">Marketing</div>
             <div class="muted">Interviews</div>
           </div>
 
-          <!-- Real upcoming list (interview status) -->
-          <div class="tr compact-row" *ngFor="let u of upcoming | slice:0:5">
-            <div class="strong">
-              {{ u.displayName }}
-              <div class="muted" style="font-weight:400;">
-                {{ u.when ? (u.when | date:'MMM d, y, h:mm a') : 'Not scheduled' }}
-              </div>
-            </div>
+          <div class="tr compact-row" *ngFor="let u of upcoming; let idx = index">
+            <div class="strong">{{ u.candidate }}</div>
+            <div class="status small muted">{{ u.when ? (u.when | date:'MMM d, y, h:mm a') : 'Not scheduled' }}</div>
             <div class="actions">
-              <button class="btn mint" (click)="schedule(u)">{{ u.when ? 'Reschedule' : 'Schedule' }}</button>
+              <button class="btn mint" (click)="openScheduleFor(u, idx)">{{ u.when ? 'Reschedule' : 'Schedule' }}</button>
               <button class="btn sky"  (click)="email(u)">Email</button>
             </div>
           </div>
         </div>
 
-        <!-- Footer CTA -->
         <div class="sub-card glassy-lite">
           <div class="panel-title sm">Upcoming Interviews</div>
-          <button class="btn mint wide" (click)="openSchedule()">Schedule</button>
+          <button class="btn mint wide" (click)="openScheduleNew()">Schedule</button>
         </div>
       </aside>
     </div>
-  </div>
-</div>
 
-<!-- ===== Schedule Modal ===== -->
-<div class="modal-backdrop" *ngIf="scheduleModalOpen" (click)="closeScheduleModal()">
-  <div class="modal glassy" (click)="$event.stopPropagation()">
-    <div class="modal-head">
-      <h3 class="modal-title">{{ scheduleTarget ? 'Schedule Interview' : 'Schedule (pick from list)' }}</h3>
+    <!-- Schedule Modal -->
+    <div class="modal-backdrop" *ngIf="scheduleModalOpen" (click)="closeScheduleModal()">
+      <div class="modal glassy" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+          <h3 class="modal-title">{{ scheduleEditingIndex !== null ? 'Reschedule Interview' : 'Schedule Interview' }}</h3>
+        </div>
+        <form class="modal-body" (ngSubmit)="saveSchedule()">
+          <div class="form-row">
+            <label>Candidate</label>
+            <input class="field" type="text" [(ngModel)]="scheduleForm.candidate" name="cand" required />
+          </div>
+
+          <div class="form-row">
+            <label>Date &amp; Time</label>
+            <input class="field" type="datetime-local" [(ngModel)]="scheduleForm.when" name="when" required />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn" (click)="closeScheduleModal()">Cancel</button>
+            <button type="submit" class="btn mint">Save</button>
+          </div>
+        </form>
+      </div>
     </div>
 
-    <form (ngSubmit)="saveScheduleModal()" class="modal-body">
-      <div class="form-row" *ngIf="scheduleTarget">
-        <label>Candidate</label>
-        <div class="value">{{ scheduleTarget.displayName }}</div>
-      </div>
-
-      <div class="form-row">
-        <label>Date &amp; Time</label>
-        <input class="field" type="datetime-local" name="when" [(ngModel)]="scheduleDate" required />
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn" (click)="closeScheduleModal()">Cancel</button>
-        <button type="submit" class="btn mint" [disabled]="!scheduleTarget || !scheduleDate">Save</button>
-      </div>
-    </form>
   </div>
 </div>

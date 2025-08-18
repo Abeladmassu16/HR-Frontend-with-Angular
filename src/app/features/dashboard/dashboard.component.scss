@@ -1086,3 +1086,188 @@
   .modal { width: 96vw; }
   .modal-body { padding: 8px 16px 16px; }
 }
+
+/* clickable helper (in case it's not already present) */
+.clickable { cursor: pointer; }
+
+/* ===== NEW: Salary KPI tile look ===== */
+.kpi-sal {
+  background: linear-gradient(180deg, rgba(0,153,153,.12), rgba(0,153,153,.06));
+  .stat-num { letter-spacing: .5px;font-size:large; }
+  .chip {
+    background: rgba(0,153,153,.14);
+    color: #0e3a36;
+  }
+}
+/* Keep your existing dashboard styles; this adds the modal + a few helpers */
+
+/* Modal glass look */
+.modal-backdrop{
+  position: fixed; inset: 0;
+  background: rgba(48,153,134,.28);
+  backdrop-filter: blur(4px) saturate(120%);
+  -webkit-backdrop-filter: blur(4px) saturate(120%);
+  z-index: 50;
+}
+.modal{
+  position: fixed; left: 50%; top: 10vh; transform: translateX(-50%);
+  width: 92%; max-width: 720px; z-index: 60;
+  padding: 16px; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.52));
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow:
+    0 28px 80px rgba(13,18,25,.20),
+    0 10px 30px rgba(13,18,25,.12),
+    inset 0 1px 0 rgba(255,255,255,.65);
+}
+.modal-head { margin-bottom: 12px; }
+.modal-title { font-size: 22px; font-weight: 800; color: #0f2f28; }
+.modal-body .form-row{ display: grid; gap: 6px; margin-bottom: 12px; }
+.modal-body label{ font-weight: 800; opacity: .88; }
+.field{
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: rgba(255,255,255,.9);
+  outline: none;
+}
+.modal-actions{ display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+
+/* Buttons (match your site styles) */
+.btn { border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+.btn.mint { background: linear-gradient(90deg,#33c0a5,#6ad7c3); color: #0b2e27; }
+.btn.sky  { background: #cfe1ff; color: #0b2e27; }
+
+/* tiny helpers used above */
+.panel-title.sm{ font-size:14px; opacity:.8; }
+.table.compact .thead,
+.table.compact .tr { display:grid; grid-template-columns: 1.5fr 1fr 140px; align-items:center; gap:12px; }
+.table.compact .thead { font-weight:800; opacity:.85; padding:8px 0; }
+.table.compact .tr { padding:10px 0; border-top:1px solid rgba(0,0,0,.05); }
+.badge{ padding:6px 10px; border-radius:999px; font-weight:700; }
+.badge-interview{ background:#ffe2b7; color:#7b4b00; }
+.badge-applied{ background:#e1ecff; color:#1e3a8a; }
+.badge-hired{ background:#c9f7e6; color:#065f46; }
+.badge-rejected{ background:#ffd6d9; color:#7a1020; }
+
+
+
+/* Page shell with gutters */
+.page-wrap {
+  padding: 12px 0 32px;
+}
+.page-shell {
+  max-width: 1240px;       /* keeps nice margins on large screens */
+  margin: 0 auto;
+  padding: 8px 16px 32px;
+}
+
+/* Header/title spacing */
+.row.header {
+  margin-bottom: 18px;
+}
+.title {
+  margin: 0;
+}
+
+/* KPI row layout with gaps */
+.hero-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* Split panels (left table + right panel) with gaps */
+.split-panels {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 1100px) {
+  .split-panels { grid-template-columns: 1fr; }
+}
+
+/* A few light cosmetics; keep your existing classes as-is */
+.glassy { border-radius: 16px; }
+.panel   { padding: 16px; }
+.panel-head { display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
+
+.stat-card { padding: 18px; position: relative;  }
+.stat-num  { font-size: 32px; font-weight: 800; line-height: 1; }
+.stat-sub  { font-size: 12px; opacity: .7; margin-top: 2px; }
+.stat-label{ margin-top: 8px; font-weight: 700; opacity: .8; }
+
+.chip { display:inline-flex; align-items:center; gap:6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.chip-up    { background: #e8faf0; color:#0d8b57; }
+.chip-down  { background: #feecec; color:#b42318; }
+.chip-flat  { background: rgba(0,0,0,.06); color:#173; }
+
+.table.compact .thead, .table.compact .tr {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+.table.compact .thead { font-weight: 800; padding: 8px 0; }
+.table.compact .tr { padding: 10px 0; border-top: 1px solid rgba(0,0,0,.06); }
+.table .strong { font-weight: 700; }
+
+.badge { padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+.badge-applied   { background:#eef2ff; color:#3140a0; }
+.badge-interview { background:#fff1c6; color:#8a5c00; }
+.badge-hired     { background:#e6f7ed; color:#0b6b44; }
+.badge-rejected  { background:#fdeaea; color:#ab1e1e; }
+
+.sub-card { padding: 12px; border-radius: 12px; margin-bottom: 12px; }
+.sub-grid { display:flex; justify-content:space-between; margin-bottom:8px; }
+.muted { opacity: .75; }
+.actions { display:flex; gap:10px; justify-content:flex-end; }
+
+/* Simple modal glass */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.42);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+}
+.modal {
+  position: fixed; left: 50%; top: 10vh; transform: translateX(-50%);
+  width: 92%; max-width: 560px; z-index: 60;
+  padding: 12px; border-radius: 18px;
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.45);
+  box-shadow: 0 28px 80px rgba(13,18,25,.20), 0 10px 30px rgba(13,18,25,.12), inset 0 1px 0 rgba(255,255,255,.65);
+  backdrop-filter: blur(16px) saturate(125%);
+}
+.modal-body .form-row{ display: grid; gap: 6px; margin-bottom: 10px; }
+.modal-actions{ display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
+
+/* Buttons (kept from your theme) */
+.btn { border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+.btn.mint { background: linear-gradient(90deg, #33c0a5, #6ad7c3); color: #0b2e27; }
+.btn.sky  { background: #e3efff; color:#1b3c88; }
+.btn.wide { width: 100%; }
+
+
+/* widen the page so 5 tiles fit */
+.page-shell {
+  max-width: 1320px;     /* was 1240 */
+  margin: 0 auto;
+  padding: 8px 16px 32px;
+}
+
+/* KPI row */
+.hero-wrap {
+  display: grid;
+  gap: 20px;                                     /* a touch tighter than 24px */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* was 240px */
+
+  /* On large screens, lock to 5 columns so all cards stay on one line */
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Optional: keep tile heights visually consistent */
+.stat-card { min-height: 140px; }

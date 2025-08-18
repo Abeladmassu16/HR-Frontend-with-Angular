@@ -1,0 +1,173 @@
+.mat-elev { margin: 16px; border-radius: 12px; overflow: hidden; }
+.toolbar { border-radius: 12px 12px 0 0; }
+.spacer { flex: 1 1 auto; }
+.table-wrap { padding: 12px; }
+table.full { width: 100%; }
+.right { text-align: right; }
+/* Reuse your existing glass styles & layout; this only tunes columns for salaries */
+
+.table.sal {
+  .thead, .tr {
+    display: grid;
+    grid-template-columns: 64px 2fr 1.2fr 1fr 1.2fr 120px; /* ID | Employee | Amount | Currency | Effective | Actions */
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+/* If you don’t have a dedicated table class per page, the generic .table rules from other pages will apply.
+   The modal uses the same .modal / .modal-backdrop / .field / .btn classes already present in your app. */
+
+/* Optional: slight emphasis for numbers */
+.td:nth-child(3) { font-variant-numeric: tabular-nums; }
+/* Page-specific table grid so your data lines up like other pages */
+.table.sal {
+  .thead, .tr {
+    display: grid;
+    grid-template-columns: 64px 2fr 1.2fr 1fr 1.2fr 120px; /* ID | Employee | Amount | Currency | Effective | Actions */
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+/* Make amounts align nicely */
+.table.sal .td:nth-child(3) { font-variant-numeric: tabular-nums; }
+/* Page shell + header (same look as other pages) */
+.page-wrap { padding: 12px 10px 32px; }
+.page-shell { max-width: 1200px; margin: 0 auto; }
+
+.head-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 12px 0 16px;
+}
+.title { font-size: 28px; font-weight: 800; letter-spacing: .2px; color: #0e2b26; }
+
+.actions { display: flex; align-items: center; gap: 10px; }
+.search {
+  width: 260px; border-radius: 12px; border: 1px solid rgba(0,0,0,.06);
+  padding: 10px 12px; background: rgba(255,255,255,.85); outline: none;
+}
+.btn { border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+.btn.mint {
+  background: linear-gradient(90deg, #33c0a5, #6ad7c3); color: #0b2e27;
+  box-shadow: 0 6px 16px rgba(14,43,38,.12);
+}
+
+/* Glassy table */
+.table.glassy {
+  background: rgba(255,255,255,.58);
+  border: 1px solid rgba(255,255,255,.5);
+  border-radius: 14px;
+  box-shadow:
+    0 22px 48px rgba(13,18,25,.12),
+    0 10px 22px rgba(13,18,25,.08),
+    inset 0 1px 0 rgba(255,255,255,.65);
+}
+
+.table.glassy.sal {
+  .thead, .tr {
+    display: grid;
+    grid-template-columns: 80px 2fr 1.2fr 1fr 1.4fr 120px;
+    align-items: center;
+    gap: 12px;
+  }
+  .thead {
+    padding: 12px 14px; font-weight: 800; border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+  .tr { padding: 14px 14px; border-top: 1px solid rgba(0,0,0,.05); }
+  .tr:nth-child(even) { background: rgba(255,255,255,.56); }
+  .th.right, .td.right { text-align: right; }
+}
+
+/* Pills for action buttons */
+.icon-pill {
+  border: none; border-radius: 10px; padding: 8px 10px; cursor: pointer; font-size: 14px;
+}
+.icon-pill.primary { background: #cfe1ff; }
+.icon-pill.danger  { background: #ffcfd1; }
+
+/* Mint glass modal (same as Employees/Candidates) */
+.modal-backdrop{
+  position: fixed; inset: 0;
+  background: rgba(48,153,134,.28);  /* minty glass */
+  backdrop-filter: blur(4px) saturate(120%);
+  -webkit-backdrop-filter: blur(4px) saturate(120%);
+  z-index: 50;
+  width: auto;
+}
+
+.modal{
+  position: fixed; left: 50%; top: 10vh; transform: translateX(-50%);
+  width: 92%; max-width: 820px; z-index: 60;
+  padding: 16px; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.52));
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow:
+    0 28px 80px rgba(13,18,25,.20),
+    0 10px 30px rgba(13,18,25,.12),
+    inset 0 1px 0 rgba(255,255,255,.65);
+}
+
+.modal-head { margin-bottom: 12px; }
+.modal-title { font-size: 22px; font-weight: 800; color: #0f2f28; }
+
+.modal-body .form-row{ display: grid; gap: 6px; margin-bottom: 12px; }
+.modal-body label{ font-weight: 800; opacity: .88; }
+.field{
+  width: 90%;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: rgba(255,255,255,.9);
+  outline: none;
+}
+.modal-actions{ display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+
+/* Responsive grid tweaks */
+@media (max-width: 900px) {
+  .table.glassy.sal .thead, .table.glassy.sal .tr {
+    grid-template-columns: 64px 1.6fr 1.1fr .9fr 1.2fr 110px;
+  }
+}
+@media (max-width: 640px) {
+  .table.glassy.sal .thead, .table.glassy.sal .tr {
+    grid-template-columns: 54px 1.4fr 1fr .8fr 1.1fr 100px;
+  }
+}
+
+
+/* keep the same table/grid look you already use */
+.table.glassy .thead,
+.table.glassy .tr {
+  display: grid;
+  grid-template-columns: 64px 2fr 1.2fr 1fr 1.4fr 120px; /* id | employee | amount | currency | effective | actions */
+  align-items: center;
+  gap: 12px;
+}
+
+.table.glassy .thead {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  font-weight: 800;
+}
+.table.glassy .tr {
+  padding: 14px 12px;
+  border-top: 1px solid rgba(0,0,0,.05);
+}
+.table.glassy .td.right { text-align: right; }
+
+/* Modal (reuse your glass look) */
+.salaries-modal .field,
+.salaries-modal select.field {
+  color: #0f2b26;            /* readable text on glass background */
+}
+
+.salaries-modal option {
+  color: #0f2b26;
+}
+
+/* ensure text is readable on mint gradient */
+.salaries-modal .btn.mint {
+  color: #0b2e27 !important;
+  font-weight: 700;
+}

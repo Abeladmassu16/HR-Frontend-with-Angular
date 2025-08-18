@@ -1,70 +1,47 @@
 import { Injectable } from '@angular/core';
 import { InMemoryDbService } from 'angular-in-memory-web-api';
 
-export interface Department { id: number; name: string; }
-export interface Employee {
-  id: number;
-  name: string;
-  email?: string;
-  hireDate?: string;   // ISO: YYYY-MM-DD
-  role?: string;
-  departmentId?: number;
-}
-export interface Company { id: number; name: string; location?: string; }
-export interface Candidate {
-  id: number;
-  name: string;
-  email?: string;
-  status: 'Applied' | 'Interview' | 'Hired' | 'Rejected';
-  departmentId?: number;
-}
-
 @Injectable({ providedIn: 'root' })
 export class InMemoryDataService implements InMemoryDbService {
   createDb() {
-    const departments: Department[] = [
-      { id: 1, name: 'Engineering' },
-      { id: 2, name: 'HR' },
-      { id: 3, name: 'Finance' },
-    ];
-
-    const employees: Employee[] = [
-      {
-        id: 1,
-        name: 'Abel K',
-        email: 'abel@example.com',
-        departmentId: 1,
-        hireDate: '2020-02-15',
-        role: 'Manager',
-      },
-      {
-        id: 2,
-        name: 'Elsa M',
-        email: 'elsa@example.com',
-        departmentId: 2,
-        hireDate: '2021-06-10',
-        role: 'Developer',
-      },
-    ];
-
-    const candidates: Candidate[] = [
-      { id: 1, name: 'Thomas T', email: 'thomas@example.com', status: 'Interview', departmentId: 1 },
-    ];
-
-    const companies: Company[] = [
+    const companies = [
       { id: 1, name: 'XOKA Tech', location: 'Addis Ababa' },
+      { id: 2, name: 'Globex',    location: 'Nairobi' }
     ];
 
-    return {
-      departments,
-      employees,
-      candidates,
-      companies,
-    };
+    const departments = [
+      { id: 1, name: 'Engineering', companyId: 1 },
+      { id: 2, name: 'HR',          companyId: 1 },
+      { id: 3, name: 'Finance',     companyId: 1 },
+      { id: 4, name: 'Sales',       companyId: 2 }
+    ];
+
+    const employees = [
+      { id: 1, name: 'Abel K', email: 'abel@example.com', hireDate: '2020-02-15', role: 'Engineer', departmentId: 1 },
+      { id: 2, name: 'Elsa M', email: 'elsa@example.com', hireDate: '2021-06-10', role: 'HR Specialist', departmentId: 2 }
+    ];
+
+    const candidates = [
+      { id: 1, name: 'Thomas T', email: 'thomas@example.com', status: 'Interview', departmentId: 2 },
+      { id: 2, name: 'Maya G',   email: 'maya@example.com',   status: 'Applied',   departmentId: 1 }
+    ];
+
+    const salaries = [
+      { id: 1, employeeId: 1, amount: 65000, currency: 'USD', effectiveDate: '2020-02-15' },
+      { id: 2, employeeId: 2, amount: 72000, currency: 'USD', effectiveDate: '2021-06-10' }
+    ];
+
+    // in-memory-web-api automatically exposes /api/<collection>
+    return { companies, departments, employees, candidates, salaries };
   }
 
-  // Generate next id for POSTs
   genId<T extends { id: number }>(collection: T[]): number {
-    return collection.length ? Math.max(...collection.map(i => i.id)) + 1 : 1;
+    if (!collection || collection.length === 0) return 1;
+    var max = 0;
+    for (var i = 0; i < collection.length; i++) {
+      var v = Number(collection[i].id);
+      if (isFinite(v) && v > max) max = v;
+    }
+    return max + 1;
   }
 }

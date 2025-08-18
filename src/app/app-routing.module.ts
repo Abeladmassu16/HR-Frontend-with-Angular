@@ -5,6 +5,7 @@ import { EmployeesComponent } from './features/employees/employees.component';
 import { CompaniesComponent } from './features/companies/companies.component';
 import { CandidatesComponent } from './features/candidates/candidates.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { SalariesComponent } from './features/salaries/salaries.component';
 
 const routes: Routes = [
   
@@ -13,6 +14,7 @@ const routes: Routes = [
   { path: 'employees',   component: EmployeesComponent },
   { path: 'companies',   component: CompaniesComponent },
   { path: 'candidates',  component: CandidatesComponent },
+  { path: 'salaries', component: SalariesComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'departments' }
 ];
