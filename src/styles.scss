@@ -919,3 +919,59 @@ $mintTop:#8ef1de; $mintBot:#6de7cf; $text:#0b2431; $muted:#5b7381;
 
 
 
+/* src/styles.scss (add near the top) */
+:root{
+  --mint-0: #f8fffc; /* almost white */
+  --mint-1: #eefdf7; /* very light mint */
+  --mint-2: #e6fbf3; /* light mint */
+  --mint-3: #dbf7ee; /* a touch stronger */
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  /* Fallback color */
+  background-color: var(--mint-0);
+
+  /* Layered mints: two soft radial spots + vertical blend */
+  background-image:
+    radial-gradient(1200px 800px at 10% 0%,  var(--mint-2) 0%, transparent 60%),
+    radial-gradient(1000px 700px at 90% 100%, var(--mint-3) 0%, transparent 60%),
+    linear-gradient(180deg, var(--mint-0) 0%, var(--mint-1) 50%, var(--mint-2) 100%);
+
+  background-repeat: no-repeat;
+  background-attachment: fixed;   /* parallax-like, avoids jump on scroll */
+  background-size: cover;
+}
+
+/* Optional: keep your “glassy” surfaces readable on mint */
+.glassy,
+.mdc-card,
+.mat-mdc-card,
+.table,
+.page-shell,
+.panel {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: #bef1e8bc;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 6px 24px rgba(16, 60, 48, 0.06),
+    0 2px 8px  rgba(16, 60, 48, 0.05);
+  border-radius: 16px;
+}
+
+/* Give the main content some breathing room from edges */
+.page-wrap, .canvas, .frame, .page-shell {
+  padding: 24px;
+}
+
+/* Angular Material dialog surface on mint background */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+    background: #eaf2f1;
+  border: 1px solid rgba(255,255,255,0.35);
+}

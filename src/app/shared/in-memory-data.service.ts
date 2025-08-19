@@ -13,12 +13,14 @@ export class InMemoryDataService implements InMemoryDbService {
       { id: 1, name: 'Engineering', companyId: 1 },
       { id: 2, name: 'HR',          companyId: 1 },
       { id: 3, name: 'Finance',     companyId: 1 },
-      { id: 4, name: 'Sales',       companyId: 2 }
+      { id: 4, name: 'full-stack-dev', ompanyId: 1 },
+      { id: 5, name: 'Sales',       companyId: 2 }
     ];
 
     const employees = [
       { id: 1, name: 'Abel K', email: 'abel@example.com', hireDate: '2020-02-15', role: 'Engineer', departmentId: 1 },
-      { id: 2, name: 'Elsa M', email: 'elsa@example.com', hireDate: '2021-06-10', role: 'HR Specialist', departmentId: 2 }
+      { id: 2, name: 'Elsa M', email: 'elsa@example.com', hireDate: '2021-06-10', role: 'HR Specialist', departmentId: 2 },
+       { id: 2, name: 'Nahom', email: 'nahom@example.com', hireDate: '2021-06-10', role: 'developer', departmentId: 4 }
     ];
 
     const candidates = [
