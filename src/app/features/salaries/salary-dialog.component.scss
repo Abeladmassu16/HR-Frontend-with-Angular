@@ -1,2 +1,193 @@
 .form { display: grid; grid-gap: 12px; }
 .full { width: 100%; }
+
+/* Glass dialog shell to match your forms */
+:host { display:block; }
+
+.modal-title { font-size: 24px; font-weight: 800; margin: 0 0 12px; }
+
+.modal-body { display:block; }
+
+.form-row { display:grid; gap:6px; margin-bottom:12px; }
+label { font-weight: 800; opacity:.85; }
+.field { width: 100%; }
+
+/* Buttons like the rest of the site */
+.btn { border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+.btn.mint { background: linear-gradient(90deg,#33c0a5,#6ad7c3); color:#0b2e27; }
+
+.modal-actions {
+  margin-top: 12px; display:flex; gap:10px; justify-content:flex-end;
+}
+
+/* Optional: softer background for dialog */
+:host ::ng-deep .mat-mdc-form-field-infix { padding: 14px 0 !important; }
+
+
+.form-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; min-width: 280px; max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+/* Make dialog look glassy like the rest */
+:host ::ng-deep .glass-dialog .mat-dialog-container {
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: 0 24px 60px rgba(13,18,25,.18);
+  border-radius: 18px;
+}
+
+
+.dialog-body {
+  .full {
+    width: 100%;
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+
+  .mint {
+    background: linear-gradient(90deg, #45d2be, #6ee7cf);
+    color: #0b3d3a;
+    font-weight: 700;
+    border-radius: 14px;
+  }
+}
+
+
+/* --- GLASSY DIALOG CONTAINER --- */
+:host ::ng-deep .glass-dialog .mat-dialog-container {
+  padding: 22px 26px;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 22px;
+  box-shadow: 0 26px 52px rgba(12, 49, 44, 0.25);
+}
+
+/* Title */
+:host ::ng-deep h2[mat-dialog-title] {
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  font-size: 22px;
+  color: #0f3d39;
+  letter-spacing: 0.3px;
+}
+
+/* Content layout */
+.dialog-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-row-gap: 12px;
+}
+
+.full {
+  width: 100%;
+}
+
+/* --- MINT / GLASSY FORM CONTROLS --- */
+:host ::ng-deep .mat-form-field {
+  width: 100%;
+}
+
+/* Remove default underline in "fill" appearance */
+:host ::ng-deep
+  .mat-form-field-appearance-fill
+  .mat-form-field-underline {
+  display: none;
+}
+
+/* Glassy background, rounded, subtle border */
+:host ::ng-deep
+  .mat-form-field-appearance-fill
+  .mat-form-field-flex {
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(63, 210, 188, 0.18);
+  transition: box-shadow 160ms ease, background 160ms ease;
+  padding: 0 12px;
+  min-height: 56px;
+}
+
+/* Focus ring + mint glow */
+:host ::ng-deep
+  .mat-form-field-appearance-fill.mat-focused
+  .mat-form-field-flex {
+  box-shadow:
+    inset 0 0 0 2px #3fd2bc,
+    0 8px 16px rgba(63, 210, 188, 0.18);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+/* Label style */
+:host ::ng-deep .mat-form-field-label {
+  color: #2a5e59;
+  font-weight: 600;
+}
+
+/* Input text color */
+:host ::ng-deep .mat-input-element,
+:host ::ng-deep .mat-select-value {
+  color: #0f3d39;
+}
+
+/* Select arrow & date icon color */
+:host ::ng-deep .mat-select-arrow,
+:host ::ng-deep .mat-datepicker-toggle-default-icon {
+  color: #175a54;
+  opacity: 0.9;
+}
+
+/* Error color (keep subtle) */
+:host ::ng-deep .mat-form-field-subscript-wrapper,
+:host ::ng-deep .mat-error {
+  color: #d94f4f;
+}
+
+/* --- SELECT PANEL (dropdown) --- */
+:host ::ng-deep .cdk-overlay-pane .mat-select-panel {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  box-shadow: 0 18px 36px rgba(12, 49, 44, 0.25);
+}
+
+:host ::ng-deep .mat-option.mat-active,
+:host ::ng-deep .mat-option:hover {
+  background: #e8fbf6;
+  color: #0f3d39;
+}
+
+/* --- ACTIONS --- */
+.dialog-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  button[mat-stroked-button] {
+    border-radius: 14px;
+    font-weight: 700;
+    color: #173d39;
+    border-color: rgba(23, 61, 57, 0.2);
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  button[mat-raised-button].mint {
+    background: linear-gradient(90deg, #45d2be, #6ee7cf);
+    color: #0b3d3a;
+    font-weight: 800;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(63, 210, 188, 0.25);
+  }
+}
+

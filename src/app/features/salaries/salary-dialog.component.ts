@@ -1,46 +1,72 @@
-import { Component, Inject } from '@angular/core';
-import { FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Employee, Salary } from '../../shared/hr-data.service';
+import { Component, Inject, OnInit } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { HrDataService, Employee, Salary } from '../../shared/hr-data.service';
 
-export interface SalaryDialogData {
-  mode: 'add'|'edit';
-  employees: Employee[];
-  value?: Partial<Salary>;
+interface DialogData {
+  mode: 'add' | 'edit';
+  row?: Salary;
 }
 
 @Component({
   selector: 'app-salary-dialog',
   templateUrl: './salary-dialog.component.html',
-  styleUrls: ['./salary-dialog.component.scss']
+  styleUrls: ['./salary-dialog.component.scss'],
 })
-export class SalaryDialogComponent {
-  form: FormGroup;
-  title: string;
+export class SalaryDialogComponent implements OnInit {
+  title = 'Add Salary';
+  employees: Employee[] = [];
 
-  employees: Employee[];
+  // simple template-driven payload
+  form: Partial<Salary> = {
+    employeeId: undefined,
+    amount: undefined,
+    currency: 'USD',
+    effectiveDate: '',
+  };
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: SalaryDialogData,
-    private fb: FormBuilder,
-    private ref: MatDialogRef<SalaryDialogComponent>
-  ) {
-    this.employees = data.employees || [];
-    var v = data.value || {};
-    this.form = this.fb.group({
-      id:           [v.id],
-      employeeId:   [v.employeeId, Validators.required],
-      amount:       [v.amount, [Validators.required, Validators.min(0)]],
-      currency:     [v.currency || 'USD', Validators.required],
-      effectiveDate:[v.effectiveDate || '', Validators.required]
-    });
-    this.title = data.mode === 'add' ? 'Add Salary' : 'Edit Salary';
+    private ref: MatDialogRef<SalaryDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private ds: HrDataService
+  ) {}
+
+  ngOnInit(): void {
+    this.ds.employees$.subscribe((es) => (this.employees = es || []));
+
+    if (this.data && this.data.mode === 'edit' && this.data.row) {
+      this.title = 'Edit Salary';
+      var r = this.data.row;
+      this.form = {
+        id: r.id,
+        employeeId: r.employeeId,
+        amount: r.amount,
+        currency: r.currency || 'USD',
+        effectiveDate: r.effectiveDate || '',
+      };
+    }
   }
 
-  save() {
-    if (this.form.invalid) return;
-    this.ref.close(this.form.value as Salary);
+  cancel(): void {
+    this.ref.close();
   }
 
-  cancel() { this.ref.close(null); }
+  save(): void {
+    // very basic validation
+    if (!this.form.employeeId || this.form.amount == null) return;
+    this.ref.close(this.form);
+  }
+
+  /** Prefer real name; otherwise build Title Case from email local-part */
+  displayEmployee(e: Employee): string {
+    if (!e) return '';
+    if (e.name && String(e.name).trim()) return String(e.name).trim();
+    const local = (e.email || '').split('@')[0] || '';
+    if (!local) return '';
+    return local
+      .replace(/[._-]+/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); })
+      .join(' ');
+  }
 }

@@ -15,6 +15,7 @@ const routes: Routes = [
   { path: 'companies',   component: CompaniesComponent },
   { path: 'candidates',  component: CandidatesComponent },
   { path: 'salaries', component: SalariesComponent },
+  { path: 'salaries', loadChildren: undefined, component: SalariesComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'departments' }
 ];

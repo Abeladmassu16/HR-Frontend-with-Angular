@@ -1,31 +1,51 @@
 <h2 mat-dialog-title>{{ title }}</h2>
-<form [formGroup]="form" (ngSubmit)="save()" mat-dialog-content class="form">
-  <mat-form-field appearance="outline" class="full">
-    <mat-label>Employee</mat-label>
-    <mat-select formControlName="employeeId" required>
-      <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.name }}</mat-option>
-    </mat-select>
-  </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full">
-    <mat-label>Amount</mat-label>
-    <input matInput type="number" formControlName="amount" required>
-  </mat-form-field>
+<div mat-dialog-content class="dialog-body">
+  <form (ngSubmit)="save()">
+    <mat-form-field appearance="fill" class="full">
+      <mat-label>Employee</mat-label>
+      <mat-select [(ngModel)]="form.employeeId" name="employeeId" required>
+        <mat-option *ngFor="let e of employees" [value]="e.id">
+          {{ displayEmployee(e) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full">
-    <mat-label>Currency</mat-label>
-    <input matInput formControlName="currency" required>
-  </mat-form-field>
+    <mat-form-field appearance="fill" class="full">
+      <mat-label>Amount</mat-label>
+      <input
+        matInput
+        type="number"
+        [(ngModel)]="form.amount"
+        name="amount"
+        required
+        min="0"
+      />
+    </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full">
-    <mat-label>Effective date</mat-label>
-    <input matInput [matDatepicker]="picker" formControlName="effectiveDate">
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-  </mat-form-field>
+    <mat-form-field appearance="fill" class="full">
+      <mat-label>Currency</mat-label>
+      <input matInput [(ngModel)]="form.currency" name="currency" />
+    </mat-form-field>
 
-  <div mat-dialog-actions align="end">
-    <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
-    <button mat-raised-button color="primary" type="submit">Save</button>
-  </div>
-</form>
+    <mat-form-field appearance="fill" class="full">
+      <mat-label>Effective Date</mat-label>
+      <input
+        matInput
+        [matDatepicker]="picker"
+        [(ngModel)]="form.effectiveDate"
+        name="effectiveDate"
+        placeholder="dd/mm/yyyy"
+      />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <div class="dialog-actions">
+      <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+      <button mat-raised-button color="primary" class="mint" type="submit">
+        Save
+      </button>
+    </div>
+  </form>
+</div>

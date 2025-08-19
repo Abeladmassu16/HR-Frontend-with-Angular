@@ -171,3 +171,411 @@ table.full { width: 100%; }
   color: #0b2e27 !important;
   font-weight: 700;
 }
+
+
+
+
+
+/* Page head + actions (matches your existing pages) */
+.page-wrap { padding: 16px 18px 48px; }
+.page-shell { max-width: 1200px; margin: 0 auto; }
+
+.head-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title { font-size: 28px; font-weight: 800; margin: 0; }
+
+.actions { display:flex; gap:10px; align-items:center; }
+.search {
+  width: 260px; padding: 10px 14px; border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.85);
+}
+
+/* Buttons (reuse your palette) */
+.btn { border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+.btn.mint { background: linear-gradient(90deg,#33c0a5,#6ad7c3); color:#0b2e27; }
+
+/* Glass card shell for table */
+.table.glassy {
+  background: rgba(255,255,255,.68);
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 14px;
+  padding: 8px 8px 0;
+  box-shadow:
+    0 18px 50px rgba(13,18,25,.10),
+    0 6px 20px rgba(13,18,25,.08),
+    inset 0 1px 0 rgba(255,255,255,.65);
+}
+
+/* Icon pills like the rest of the app */
+.icon-pill { border-radius: 10px; padding: 6px 8px; }
+.icon-pill.primary { background: #cfe1ff; }
+.icon-pill.danger { background: #ffcfd1; }
+
+.right { text-align: right; }
+
+/* Make mat-table look like your tables */
+table { width: 100%; }
+th.mat-header-cell { font-weight: 800; }
+tr.mat-row, tr.mat-header-row { height: 56px; }
+mat-paginator { border-top: 1px solid rgba(0,0,0,.06); }
+
+
+.page-wrap { padding: 16px; }
+.page-shell { max-width: 1200px; margin: 0 auto; }
+
+.head-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; gap: 12px; flex-wrap: wrap;
+}
+.title { margin: 0; font-weight: 800; }
+.actions { display: flex; gap: 12px; align-items: center; }
+
+.glassy-card {
+  border-radius: 16px; padding: 8px;
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.35);
+}
+
+.right { text-align: right; }
+table { width: 100%; }
+
+
+
+/* Layout */
+.page-wrap { padding: 16px; }
+.page-shell { max-width: 1200px; margin: 0 auto; }
+
+.head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+/* Card glass style to match “mint” theme */
+:host ::ng-deep .mat-card.glassy-card,
+.glassy-card {
+  border-radius: 18px;
+  padding: 12px;
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.35);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 60px rgba(13,18,25,.18);
+}
+
+/* Table */
+table { width: 100%; }
+
+:host ::ng-deep .mat-header-row,
+:host ::ng-deep .mat-header-cell {
+  font-weight: 700;
+  color: #1a2f2b;
+}
+
+:host ::ng-deep .mat-row {
+  transition: background .2s ease;
+}
+:host ::ng-deep .mat-row:hover {
+  background: rgba(70, 204, 173, .08); /* soft mint hover */
+}
+
+/* Right aligned header/cell */
+.right { text-align: right; }
+
+/* Paginator to match glass surface */
+:host ::ng-deep .mat-paginator {
+  background: transparent;
+}
+
+/* “Add” button look (mint gradient) */
+:host ::ng-deep .mat-raised-button.mat-primary {
+  background: linear-gradient(90deg, #3cc7ab, #69dcbf);
+  color: #053;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(60,199,171,.28);
+}
+
+/* Dialog glass look is applied via panelClass=glass-dialog */
+:host ::ng-deep .glass-dialog .mat-dialog-container {
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.35);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  box-shadow: 0 28px 70px rgba(13,18,25,.22);
+}
+
+.page-wrap {
+  padding: 24px;
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  .title {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .search {
+      width: 340px;
+    }
+
+    .mint {
+      background: linear-gradient(90deg, #45d2be, #6ee7cf);
+      color: #0b3d3a;
+      font-weight: 700;
+      border-radius: 14px;
+
+      mat-icon {
+        margin-right: 6px;
+      }
+    }
+  }
+}
+
+.card.glassy {
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(12, 49, 44, 0.15);
+  backdrop-filter: blur(12px);
+  padding: 8px 8px 0;
+
+  table {
+    width: 100%;
+  }
+
+  th.mat-header-cell {
+    font-weight: 700;
+    color: #173d39;
+  }
+
+  .right {
+    text-align: right;
+  }
+
+  .icon-pill {
+    transform: scale(0.92);
+    margin-left: 6px;
+  }
+}
+
+/* Dialog shared glass look */
+:host ::ng-deep .glass-dialog .mat-dialog-container {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(12, 49, 44, 0.2);
+}
+
+
+.page-wrap {
+  padding: 24px;
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  .title {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .search {
+      width: 340px;
+    }
+
+    .mint,
+    button[mat-raised-button].mint {
+      background: linear-gradient(90deg, #45d2be, #6ee7cf);
+      color: #0b3d3a;
+      font-weight: 700;
+      border-radius: 14px;
+
+      mat-icon {
+        margin-right: 6px;
+      }
+    }
+  }
+}
+
+.card.glassy {
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(12, 49, 44, 0.15);
+  backdrop-filter: blur(12px);
+  padding: 8px 8px 0;
+
+  table {
+    width: 100%;
+  }
+
+  th.mat-header-cell {
+    font-weight: 700;
+    color: #173d39;
+  }
+
+  .right {
+    text-align: right;
+  }
+
+  .icon-pill {
+    transform: scale(0.92);
+    margin-left: 6px;
+  }
+}
+/* ===== Page spacing & max width (adds “gaps” from screen) ===== */
+:host {
+  display: block;
+  /* top/bottom 28px, left/right 32px */
+  padding: 28px 32px;
+}
+
+.page-wrap {
+  /* keep the page centered and not edge-to-edge */
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* Header: title + search + add button row */
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 6px 0 18px;
+
+  .title {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: .3px;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .search {
+      width: 360px;
+    }
+
+    .mint,
+    button[mat-raised-button].mint {
+      background: linear-gradient(90deg, #45d2be, #6ee7cf);
+      color: #0b3d3a;
+      font-weight: 700;
+      border-radius: 14px;
+
+      mat-icon { margin-right: 6px; }
+    }
+  }
+}
+
+/* ===== Table “card” – less white & more mint glass ===== */
+.card.glassy {
+  /* dial down the white, add glass & mint */
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.70) 0%,
+      rgba(255, 255, 255, 0.62) 100%
+    );
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgba(12, 49, 44, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  /* room inside the card */
+  padding: 10px 10px 2px;
+}
+
+/* Material table sizing */
+.mat-table {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden; /* makes the radius clip rows */
+}
+
+/* Header row: faint mint tint instead of solid white */
+.mat-header-row {
+  background: rgba(15, 61, 57, 0.05);
+}
+
+.mat-header-cell {
+  color: #0f3d39;
+  font-weight: 700;
+  padding: 14px 16px;
+  border: 0;
+}
+
+/* Body rows */
+.mat-row .mat-cell {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(12, 49, 44, 0.06);
+  color: #0f3d39;
+}
+
+/* Zebra striping – very subtle mint */
+.mat-row:nth-child(odd) .mat-cell {
+  background: rgba(63, 210, 188, 0.05);
+}
+
+/* Hover highlight */
+.mat-row:hover .mat-cell {
+  background: rgba(63, 210, 188, 0.10);
+}
+
+/* Actions cell alignment */
+.actions-cell,
+.td.right {
+  text-align: right;
+}
+
+/* Paginator blends with the card */
+.mat-paginator {
+  background: transparent;
+  padding: 0 6px 10px;
+}
+
+/* Optional: make the search input + add button look minty even outside the card */
+.mat-form-field-appearance-fill .mat-form-field-flex {
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(63, 210, 188, 0.18);
+}
+
+.mat-form-field-appearance-fill.mat-focused .mat-form-field-flex {
+  box-shadow:
+    inset 0 0 0 2px #3fd2bc,
+    0 8px 16px rgba(63, 210, 188, 0.18);
+}

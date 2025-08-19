@@ -1,145 +1,131 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Subscription, combineLatest } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
-import { HrDataService, Salary, Employee } from '../../shared/hr-data.service';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subscription, combineLatest } from 'rxjs';
 
-type ViewSalary = Salary & { employeeName?: string };
+import { HrDataService, Salary, Employee } from '../../shared/hr-data.service';
+import { SalaryDialogComponent } from './salary-dialog.component';
+
+type SalaryRow = Salary & { employeeName?: string };
 
 @Component({
   selector: 'app-salaries',
   templateUrl: './salaries.component.html',
-  styleUrls: ['./salaries.component.scss']
+  styleUrls: ['./salaries.component.scss'],
 })
 export class SalariesComponent implements OnInit, OnDestroy {
-  rows: ViewSalary[] = [];
-  employees: Employee[] = [];
+  displayedColumns: string[] = [
+    'id',
+    'employeeName',
+    'amount',
+    'currency',
+    'effectiveDate',
+    'actions',
+  ];
 
-  private search$ = new BehaviorSubject<string>('');
-
-  formOpen = false;
-  formMode: 'add' | 'edit' = 'add';
-  formSalary: Partial<Salary> = {};
-
+  dataSource = new MatTableDataSource<SalaryRow>([]);
   private sub: Subscription | undefined;
 
-  constructor(private data: HrDataService) {}
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator | undefined;
+  @ViewChild(MatSort, { static: true }) sort: MatSort | undefined;
+
+  constructor(
+    private data: HrDataService,
+    private dialog: MatDialog,
+    private snack: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
-    // keep a local copy of employees for labels & select
-    this.data.employees$.subscribe((es) => (this.employees = es ? es.slice() : []));
+    this.sub = combineLatest([this.data.salaries$, this.data.employees$]).subscribe(
+      ([sals, emps]: [Salary[], Employee[]]) => {
+        const rows: SalaryRow[] = (sals || []).map((s) => {
+          const emp = (emps || []).find((e) => Number(e.id) === Number(s.employeeId));
+          const employeeName = emp ? this.deriveName(emp) : '—';
+          return { ...s, employeeName };
+        });
 
-    // join salaries with employee names + search
-    this.sub = combineLatest([
-      this.data.salaries$,
-      this.data.employees$,
-      this.search$.pipe(startWith(''))
-    ])
-      .pipe(
-        map(([sals, emps, term]) => {
-          const q = (term || '').toLowerCase().trim();
+        this.dataSource = new MatTableDataSource(rows);
+        if (this.paginator) this.dataSource.paginator = this.paginator;
+        if (this.sort) this.dataSource.sort = this.sort;
 
-          const joined: ViewSalary[] = (sals || []).map((s) => {
-            const emp = (emps || []).find((e) => Number(e.id) === Number(s.employeeId));
-            const nm = this.employeeLabel(emp);
-            return { ...s, employeeName: nm };
-          });
-
-          if (!q) return joined;
-
-          return joined.filter((r) => {
-            const a = String(r.employeeName || '').toLowerCase();
-            const b = String(r.amount || '').toLowerCase();
-            const c = String(r.currency || '').toLowerCase();
-            return a.indexOf(q) !== -1 || b.indexOf(q) !== -1 || c.indexOf(q) !== -1;
-          });
-        })
-      )
-      .subscribe((view) => (this.rows = view || []));
+        this.dataSource.filterPredicate = (r: SalaryRow, filter: string) => {
+          const f = (filter || '').trim().toLowerCase();
+          return (
+            String(r.id || '').toLowerCase().includes(f) ||
+            String(r.employeeName || '').toLowerCase().includes(f) ||
+            String(r.amount || '').toLowerCase().includes(f) ||
+            String(r.currency || '').toLowerCase().includes(f) ||
+            String(r.effectiveDate || '').toLowerCase().includes(f)
+          );
+        };
+      }
+    );
   }
 
   ngOnDestroy(): void {
     if (this.sub) this.sub.unsubscribe();
   }
 
-  onSearch(v: string): void {
-    this.search$.next(v || '');
+  /** Prefer real name; otherwise build Title Case from email local-part */
+  private deriveName(e: Employee): string {
+    if (e && e.name && String(e.name).trim()) return String(e.name).trim();
+
+    const email = (e && e.email) ? String(e.email) : '';
+    const local = email.split('@')[0] || '';
+    if (!local) return '—';
+    // "abel.kassahun" / "abel_kassahun" / "abel-kassahun" -> "Abel Kassahun"
+    const pretty = local
+      .replace(/[._-]+/g, ' ')
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); })
+      .join(' ');
+    return pretty || '—';
   }
 
-  trackById(_: number, r: ViewSalary): number {
-    return Number(r.id);
+  applyFilter(value: string): void {
+    if (!this.dataSource) return;
+    this.dataSource.filter = (value || '').trim().toLowerCase();
+    if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
   }
 
-  /** Always prefer the real name; if missing, derive a readable label from email. Never show raw email. */
-  employeeLabel(e?: Employee): string {
-    if (!e) return '';
-    const name = (e.name || '').trim();
-    if (name) return name;
-
-    const email = (e.email || '').trim();
-    if (email) {
-      const local = email.split('@')[0] || '';
-      // prettify local part: "abel.kebede" -> "Abel kebede", "elsa_m" -> "Elsa m"
-      const pretty = local.replace(/[._-]+/g, ' ').trim();
-      return pretty ? pretty.charAt(0).toUpperCase() + pretty.slice(1) : `Employee #${e.id}`;
-    }
-    return `Employee #${e.id}`;
-  }
-
-  // --------- modal open/close ----------
   openAdd(): void {
-    this.formMode = 'add';
-    const firstId = this.employees && this.employees.length ? this.employees[0].id : undefined;
-    this.formSalary = {
-      employeeId: firstId,
-      amount: undefined,
-      currency: 'USD',
-      effectiveDate: ''
-    };
-    this.formOpen = true;
+    const ref = this.dialog.open(SalaryDialogComponent, {
+      width: '720px',
+      panelClass: 'glass-dialog',
+      data: { mode: 'add' },
+    });
+    ref.afterClosed().subscribe((payload) => {
+      if (!payload) return;
+      this.data.addSalary(payload).subscribe(() => {
+        this.snack.open('Salary created', 'OK', { duration: 2000 });
+      });
+    });
   }
 
-  openEdit(row: ViewSalary): void {
-    this.formMode = 'edit';
-    this.formSalary = {
-      id: row.id,
-      employeeId: row.employeeId,
-      amount: row.amount,
-      currency: row.currency || 'USD',
-      effectiveDate: row.effectiveDate || ''
-    };
-    this.formOpen = true;
+  openEdit(row: SalaryRow): void {
+    const ref = this.dialog.open(SalaryDialogComponent, {
+      width: '720px',
+      panelClass: 'glass-dialog',
+      data: { mode: 'edit', row },
+    });
+    ref.afterClosed().subscribe((payload) => {
+      if (!payload) return;
+      this.data.updateSalary(payload).subscribe(() => {
+        this.snack.open('Salary updated', 'OK', { duration: 2000 });
+      });
+    });
   }
 
-  closeForm(): void {
-    this.formOpen = false;
-  }
-
-  // --------- save/delete ----------
-  saveSalary(): void {
-    const payload: Partial<Salary> = { ...this.formSalary };
-
-    if (!payload.employeeId) {
-      alert('Please choose an employee.');
-      return;
-    }
-    if (payload.amount == null || Number(payload.amount) < 0) {
-      alert('Amount must be a non-negative number.');
-      return;
-    }
-    if (payload.currency) payload.currency = String(payload.currency).toUpperCase().trim();
-
-    const done = () => this.closeForm();
-
-    if (this.formMode === 'add') {
-      this.data.addSalary(payload).subscribe({ next: done, error: done });
-    } else {
-      this.data.updateSalary(payload as Salary).subscribe({ next: done, error: done });
-    }
-  }
-
-  delete(row: ViewSalary): void {
+  delete(row: SalaryRow): void {
     if (!row || row.id == null) return;
     if (!confirm('Delete this salary record?')) return;
-    this.data.deleteSalary(Number(row.id)).subscribe();
+    this.data.deleteSalary(Number(row.id)).subscribe(() => {
+      this.snack.open('Salary deleted', 'OK', { duration: 2000 });
+    });
   }
 }
